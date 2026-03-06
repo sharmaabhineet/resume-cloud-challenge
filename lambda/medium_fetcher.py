@@ -1,0 +1,98 @@
+"""
+Fetches the latest posts from a Medium RSS feed and writes posts.json to S3.
+Triggered weekly by EventBridge; can also be invoked manually.
+"""
+import json
+import os
+import re
+import urllib.request
+from datetime import datetime, timezone
+from xml.etree import ElementTree as ET
+
+import boto3
+
+S3_BUCKET = os.environ["S3_BUCKET"]
+MEDIUM_FEED_URL = os.environ["MEDIUM_FEED_URL"]
+MAX_POSTS = int(os.environ.get("MAX_POSTS", "5"))
+
+NS = {
+    "content": "http://purl.org/rss/1.0/modules/content/",
+    "media":   "http://search.yahoo.com/mrss/",
+}
+
+
+def estimate_reading_time(html):
+    """Strip HTML and estimate reading time at 200 wpm."""
+    text = re.sub(r"<[^>]+>", " ", html)
+    words = len(text.split())
+    return max(1, round(words / 200))
+
+
+def extract_thumbnail(item):
+    for ns_key, local in [("media", "thumbnail"), ("media", "content")]:
+        el = item.find(f"{{{NS[ns_key]}}}{local}")
+        if el is not None and el.get("url"):
+            return el.get("url")
+    return None
+
+
+def parse_feed(xml_bytes):
+    root = ET.fromstring(xml_bytes)
+    channel = root.find("channel")
+    posts = []
+
+    for item in channel.findall("item")[:MAX_POSTS]:
+        title = (item.findtext("title") or "").strip()
+        link  = (item.findtext("link")  or "").strip()
+
+        pub_raw = (item.findtext("pubDate") or "").strip()
+        try:
+            published = datetime.strptime(pub_raw, "%a, %d %b %Y %H:%M:%S %Z").strftime("%b %d, %Y")
+        except Exception:
+            published = ""
+
+        tags = [c.text for c in item.findall("category") if c.text][:3]
+
+        content_el = item.find(f"{{{NS['content']}}}encoded")
+        reading_time = estimate_reading_time(content_el.text or "") if content_el is not None else 1
+
+        thumbnail = extract_thumbnail(item)
+
+        posts.append({
+            "title":        title,
+            "url":          link,
+            "published":    published,
+            "tags":         tags,
+            "reading_time": reading_time,
+            "thumbnail":    thumbnail,
+        })
+
+    return posts
+
+
+def handler(event, context):
+    req = urllib.request.Request(
+        MEDIUM_FEED_URL,
+        headers={"User-Agent": "Mozilla/5.0 (compatible; ResumeSiteBot/1.0)"},
+    )
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        xml_bytes = resp.read()
+
+    posts = parse_feed(xml_bytes)
+
+    payload = {
+        "updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "posts":   posts,
+    }
+
+    s3 = boto3.client("s3")
+    s3.put_object(
+        Bucket=S3_BUCKET,
+        Key="posts.json",
+        Body=json.dumps(payload, ensure_ascii=False, indent=2),
+        ContentType="application/json",
+        CacheControl="max-age=3600",
+    )
+
+    print(f"Wrote {len(posts)} posts to s3://{S3_BUCKET}/posts.json")
+    return {"statusCode": 200, "posts_written": len(posts)}

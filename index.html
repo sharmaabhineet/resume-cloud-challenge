@@ -108,6 +108,7 @@
           <a href="#about"          class="nav-link-item">About</a>
           <a href="#skills"         class="nav-link-item">Skills</a>
           <a href="#experience"     class="nav-link-item">Experience</a>
+          <a href="#writing"       class="nav-link-item">Writing</a>
           <a href="#education"      class="nav-link-item">Education</a>
           <a href="#certifications" class="nav-link-item">Certs</a>
           <a href="files/abhineet-resume.pdf" target="_blank" class="nav-link-item nav-cta">
@@ -488,6 +489,22 @@
     </div>
   </section>
 
+  <!-- ===== Writing ===== -->
+  <section id="writing" class="section" aria-label="Writing">
+    <div class="container">
+      <h2 class="section-title">Writing</h2>
+      <div id="posts-grid" class="row g-3">
+        <!-- Populated by posts.json -->
+        <div class="col-12 text-center py-4" id="posts-loading">
+          <span style="color:var(--text-muted); font-size:.875rem;">Loading posts&hellip;</span>
+        </div>
+      </div>
+      <a href="https://medium.com/@sharmaabhineet" target="_blank" rel="noopener" class="writing-cta">
+        <i class="fab fa-medium" aria-hidden="true"></i> Read more on Medium
+      </a>
+    </div>
+  </section>
+
   <!-- ===== Education ===== -->
   <section id="education" class="section" aria-label="Education">
     <div class="container">
@@ -666,6 +683,37 @@
     document.getElementById('statCloudExp').textContent   = cloudYrs + '+';
     document.getElementById('currentRoleExp').textContent = durationStr('2021-03-01');
     document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+    // ---- Medium posts ----
+    fetch('/posts.json')
+      .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function(data) {
+        var grid = document.getElementById('posts-grid');
+        if (!data.posts || data.posts.length === 0) {
+          grid.innerHTML = '<div class="col-12"><p style="color:var(--text-muted);">No posts yet.</p></div>';
+          return;
+        }
+        grid.innerHTML = data.posts.map(function(p) {
+          var tags = (p.tags || []).map(function(t) {
+            return '<span class="post-tag">' + t + '</span>';
+          }).join('');
+          return '<div class="col-md-6 col-lg-4" data-aos="fade-up">' +
+            '<div class="post-card">' +
+              '<a href="' + p.url + '" target="_blank" rel="noopener" class="post-title">' + p.title + '</a>' +
+              '<div class="post-meta">' +
+                '<span><i class="fas fa-calendar-alt"></i> ' + p.published + '</span>' +
+                '<span><i class="fas fa-clock"></i> ' + p.reading_time + ' min read</span>' +
+              '</div>' +
+              '<div class="post-tags">' + tags + '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+        if (window.AOS) AOS.refresh();
+      })
+      .catch(function() {
+        document.getElementById('posts-loading').innerHTML =
+          '<p style="color:var(--text-muted);font-size:.875rem;">Posts coming soon.</p>';
+      });
 
     // ---- Visitor counter ----
     if (window.COUNTER_API_URL) {

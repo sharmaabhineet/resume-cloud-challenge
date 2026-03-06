@@ -195,6 +195,24 @@
         "logs:DeleteRetentionPolicy"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "EventBridgeManagement",
+      "Effect": "Allow",
+      "Action": [
+        "events:CreateRule",
+        "events:DeleteRule",
+        "events:PutRule",
+        "events:DescribeRule",
+        "events:ListRules",
+        "events:PutTargets",
+        "events:RemoveTargets",
+        "events:ListTargetsByRule",
+        "events:TagResource",
+        "events:UntagResource",
+        "events:ListTagsForResource"
+      ],
+      "Resource": "*"
     }
   ]
 }
