@@ -414,6 +414,36 @@ aws cloudfront create-invalidation \
   --profile resume-deployer
 ```
 
+### Rotate GitHub PAT (every 90 days)
+
+The GitHub Personal Access Token used by the `resume-github-fetcher` Lambda expires every 90 days. When it does, the Lambda will fail with an authentication error and `repos.json` will stop updating.
+
+**Steps to rotate:**
+
+1. **Generate a new PAT on GitHub**
+   - Go to: GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+   - Click **Generate new token (classic)**
+   - Name: `resume-github-fetcher` (or append the date)
+   - Expiration: 90 days
+   - Scopes: `repo` + `read:user`
+   - Copy the new token immediately
+
+2. **Update the secret in AWS Secrets Manager**
+   ```bash
+   aws secretsmanager put-secret-value \
+     --secret-id arn:aws:secretsmanager:us-east-1:329599648113:secret:resume/github-pat-IbP2FD \
+     --secret-string '{"pat":"ghp_YOUR_NEW_TOKEN_HERE"}' \
+     --profile resume-deployer
+   ```
+
+3. **Verify by invoking the Lambda manually**
+   ```bash
+   ./fetch-repos.sh
+   ```
+   Check the logs — it should show `Wrote repos.json — N repos` without any authentication errors.
+
+> **Tip:** Set a calendar reminder ~85 days from when you create each token so you rotate it before it expires.
+
 ---
 
 ## 11. Repository Structure
