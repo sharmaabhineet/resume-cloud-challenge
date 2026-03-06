@@ -16,7 +16,7 @@ terraform {
 }
 
 # Configure the AWS Provider
+# Profile is set via AWS_PROFILE env var locally; OIDC credentials are used in CI/CD
 provider "aws" {
-  profile = "resume-deployer"
   region = var.region
 }
