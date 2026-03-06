@@ -6,7 +6,10 @@ resource "aws_cloudwatch_dashboard" "resume" {
       # ---- API Gateway requests ----
       {
         type   = "metric"
-        x      = 0; y = 0; width = 8; height = 6
+        x      = 0
+        y      = 0
+        width  = 8
+        height = 6
         properties = {
           title  = "API Gateway — Requests"
           region = var.region
@@ -15,14 +18,17 @@ resource "aws_cloudwatch_dashboard" "resume" {
              "ApiId", aws_apigatewayv2_api.visitor_counter.id,
              { stat = "Sum", period = 86400, label = "Daily Requests" }]
           ]
-          view  = "timeSeries"
+          view   = "timeSeries"
           period = 86400
         }
       },
-      # ---- Visitor counter Lambda invocations ----
+      # ---- Lambda invocations ----
       {
         type   = "metric"
-        x      = 8; y = 0; width = 8; height = 6
+        x      = 8
+        y      = 0
+        width  = 8
+        height = 6
         properties = {
           title  = "Lambda — Invocations"
           region = var.region
@@ -40,14 +46,17 @@ resource "aws_cloudwatch_dashboard" "resume" {
              "FunctionName", aws_lambda_function.contact_handler.function_name,
              { stat = "Sum", period = 86400, label = "Contact Handler" }],
           ]
-          view  = "timeSeries"
+          view   = "timeSeries"
           period = 86400
         }
       },
       # ---- Lambda errors ----
       {
         type   = "metric"
-        x      = 16; y = 0; width = 8; height = 6
+        x      = 16
+        y      = 0
+        width  = 8
+        height = 6
         properties = {
           title  = "Lambda — Errors"
           region = var.region
@@ -65,14 +74,17 @@ resource "aws_cloudwatch_dashboard" "resume" {
              "FunctionName", aws_lambda_function.contact_handler.function_name,
              { stat = "Sum", period = 86400, color = "#8c564b", label = "Contact Handler" }],
           ]
-          view  = "timeSeries"
+          view   = "timeSeries"
           period = 86400
         }
       },
       # ---- DynamoDB consumed capacity ----
       {
         type   = "metric"
-        x      = 0; y = 6; width = 12; height = 6
+        x      = 0
+        y      = 6
+        width  = 12
+        height = 6
         properties = {
           title  = "DynamoDB — Consumed Capacity"
           region = var.region
@@ -84,14 +96,17 @@ resource "aws_cloudwatch_dashboard" "resume" {
              "TableName", aws_dynamodb_table.visitor_counter.name,
              { stat = "Sum", period = 3600, label = "Read CU/hr" }],
           ]
-          view  = "timeSeries"
+          view   = "timeSeries"
           period = 3600
         }
       },
-      # ---- Lambda duration (p50 / p95) ----
+      # ---- Lambda duration p95 ----
       {
         type   = "metric"
-        x      = 12; y = 6; width = 12; height = 6
+        x      = 12
+        y      = 6
+        width  = 12
+        height = 6
         properties = {
           title  = "Lambda — Duration p95 (ms)"
           region = var.region
@@ -103,7 +118,7 @@ resource "aws_cloudwatch_dashboard" "resume" {
              "FunctionName", aws_lambda_function.contact_handler.function_name,
              { stat = "p95", period = 86400, label = "Contact Handler p95" }],
           ]
-          view  = "timeSeries"
+          view   = "timeSeries"
           period = 86400
         }
       },
