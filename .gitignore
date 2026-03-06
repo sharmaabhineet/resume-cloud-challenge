@@ -45,6 +45,13 @@ scripts/config.js
 # Local dev only
 mock-counter-server.py
 
+# Infracost cache
+.infracost/
+
+# Python bytecode
+**/__pycache__/
+**/*.pyc
+
 # Lambda build artifacts
 lambda/visitor_counter.zip
 lambda/medium_fetcher.zip
