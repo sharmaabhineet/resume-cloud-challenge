@@ -36,7 +36,7 @@ resource "aws_route53_record" "ses_mail_from_spf" {
   name    = aws_ses_domain_mail_from.main.mail_from_domain
   type    = "TXT"
   ttl     = 300
-  records = ["\"v=spf1 include:amazonses.com ~all\""]
+  records = ["v=spf1 include:amazonses.com ~all"]
 }
 
 # Lambda package
