@@ -13,6 +13,13 @@ terraform {
       version = "~> 2.0"
     }
   }
+
+  # Remote state in S3 — shared between local dev and CI/CD
+  backend "s3" {
+    bucket = "com.sharmaabhineet"
+    key    = "terraform/terraform.tfstate"
+    region = "us-east-1"
+  }
 }
 
 # Configure the AWS Provider
