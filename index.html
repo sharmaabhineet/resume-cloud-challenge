@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Abhineet Sharma — Staff Engineer with 15+ years of experience in Java, cloud development, and microservices. Resume and portfolio." />
     <title>Abhineet Sharma</title>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&amp;family=Roboto:wght@300;400;500;700&amp;display=swap"/>
@@ -26,9 +27,6 @@
         }
       </style>
     </noscript>
-    <script>
-      console.log("Hello World!!!...")
-    </script>
   </head>
   <body id="top">
     <header class="d-print-none">
@@ -73,7 +71,7 @@
             <div class="row">
               <div class="col-lg-4 col-md-5">
                 <div class="avatar hover-effect bg-white shadow-sm p-1">
-                  <img src="images/Avatar.png" width="200" height="200" />
+                  <img src="images/Avatar.png" alt="Abhineet Sharma" width="200" height="200" />
                 </div>
               </div>
               <div class="col-lg-8 col-md-7 text-center text-md-start">
@@ -84,7 +82,7 @@
                   Staff Engineer @ Yieldmo &#x25C6; Cloud Development (Java)
                 </p>
                 <p data-aos="fade-left" data-aos-delay="150">
-                  MS Computer Science, Iowa State Univerisity
+                  MS Computer Science, Iowa State University
                 </p>
                 <p data-aos="fade-left" data-aos-delay="200">
                   <a href="mailto:sharma.abhineet31@gmail.com" class="link-light">sharma.abhineet31@gmail.com</a> &#x25C6; Long Island, New York,
@@ -218,7 +216,7 @@
                   <div class="text-muted text-small mb-1">
                     Mar 2021 - Present <span id="currentRoleExp"></span><br />
                     <span
-                      data-toggle="tooltip"
+                      data-bs-toggle="tooltip"
                       title="1 yr 5 mos"
                       data-placement="bottom"
                     >
@@ -422,7 +420,7 @@
                   <a
                     class="nav-link"
                     href="https://www.linkedin.com/in/sharmaabhineet/"
-                    title="Linkledin"
+                    title="LinkedIn"
                     target="_blank"
                     ><i class="fab fa-linkedin"></i
                     ><span class="menu-title sr-only">LinkedIn</span></a
@@ -456,11 +454,20 @@
     <script src="scripts/main.js?ver=1.2.0"></script>
     <script>
       var MS_IN_ONE_DAY = 1000 * 3600 * 24;
+
       function calculateAge(dt) {
         var ageDifMs = Date.now() - new Date(dt);
         var days = ageDifMs / MS_IN_ONE_DAY;
         var yrs = Math.floor(days / 365.25);
-        return yrs
+        return yrs;
+      }
+
+      function calculateAgeWithBreak(startDate, breakStart, breakEnd) {
+        var preBreakMs = new Date(breakStart) - new Date(startDate);
+        var postBreakMs = Date.now() - new Date(breakEnd);
+        var totalMs = preBreakMs + postBreakMs;
+        var days = totalMs / MS_IN_ONE_DAY;
+        return Math.floor(days / 365.25);
       }
 
       function calculateExp(dt) {
@@ -468,15 +475,15 @@
         var days = ageDifMs / MS_IN_ONE_DAY;
         var yrs = Math.floor(days / 365.25);
         var daysInCurrentYear = days - yrs * 365.25;
-        var mos = Math.floor(daysInCurrentYear / 30.4375); // on an average 365.25 / 12 days in a month
+        var mos = Math.floor(daysInCurrentYear / 30.4375);
         if (mos == 0) {
-          return yrs + " yrs"
+          return yrs + " yrs";
         }
         return yrs + " yrs " + mos + " mos";
       }
 
       document.getElementById("overallExp").innerHTML =
-        "~" + calculateAge("2010-07-07");
+        "~" + calculateAgeWithBreak("2008-07-07", "2014-07-01", "2016-06-01");
       document.getElementById("cloudExp").innerHTML =
         "~" + calculateAge("2017-09-25");
       document.getElementById("currentRoleExp").innerHTML =
