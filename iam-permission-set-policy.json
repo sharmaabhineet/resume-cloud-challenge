@@ -129,6 +129,7 @@
       "Sid": "LambdaManagement",
       "Effect": "Allow",
       "Action": [
+        "lambda:InvokeFunction",
         "lambda:CreateFunction",
         "lambda:DeleteFunction",
         "lambda:GetFunction",
@@ -164,7 +165,6 @@
         "iam:CreateRole",
         "iam:DeleteRole",
         "iam:GetRole",
-        "iam:PassRole",
         "iam:AttachRolePolicy",
         "iam:DetachRolePolicy",
         "iam:ListRolePolicies",
@@ -176,7 +176,18 @@
         "iam:UntagRole",
         "iam:ListRoleTags"
       ],
-      "Resource": "*"
+      "Resource": "arn:aws:iam::*:role/resume-*"
+    },
+    {
+      "Sid": "IAMPassRoleLambdaOnly",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::*:role/resume-*",
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": "lambda.amazonaws.com"
+        }
+      }
     },
     {
       "Sid": "CloudWatchLogsManagement",
@@ -200,7 +211,6 @@
       "Sid": "EventBridgeManagement",
       "Effect": "Allow",
       "Action": [
-        "events:CreateRule",
         "events:DeleteRule",
         "events:PutRule",
         "events:DescribeRule",

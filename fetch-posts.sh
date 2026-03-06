@@ -6,6 +6,7 @@ set -euo pipefail
 
 FUNCTION_NAME="resume-medium-fetcher"
 PROFILE="resume-deployer"
+REGION="us-east-1"
 OUTPUT_FILE="/tmp/medium-fetcher-response.json"
 
 echo "Invoking $FUNCTION_NAME..."
@@ -13,6 +14,7 @@ echo "Invoking $FUNCTION_NAME..."
 LOG=$(aws lambda invoke \
   --function-name "$FUNCTION_NAME" \
   --profile "$PROFILE" \
+  --region "$REGION" \
   --log-type Tail \
   --query 'LogResult' \
   --output text \
