@@ -266,6 +266,8 @@
       "Action": [
         "ses:VerifyDomainIdentity",
         "ses:VerifyDomainDkim",
+        "ses:VerifyEmailIdentity",
+        "ses:DeleteVerifiedEmailAddress",
         "ses:DeleteIdentity",
         "ses:GetIdentityVerificationAttributes",
         "ses:GetIdentityDkimAttributes",
