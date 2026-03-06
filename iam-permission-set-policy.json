@@ -186,8 +186,11 @@
         "logs:DeleteLogGroup",
         "logs:DescribeLogGroups",
         "logs:ListTagsLogGroup",
+        "logs:ListTagsForResource",
         "logs:TagLogGroup",
+        "logs:TagResource",
         "logs:UntagLogGroup",
+        "logs:UntagResource",
         "logs:PutRetentionPolicy",
         "logs:DeleteRetentionPolicy"
       ],
