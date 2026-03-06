@@ -1,5 +1,6 @@
 """
-Fetches the latest posts from a Medium RSS feed and writes posts.json to S3.
+Fetches the latest posts from a Medium RSS feed, generates AI summaries via
+AWS Bedrock (Claude Haiku), and writes posts.json to S3.
 Triggered weekly by EventBridge; can also be invoked manually.
 """
 import json
@@ -11,9 +12,11 @@ from xml.etree import ElementTree as ET
 
 import boto3
 
-S3_BUCKET = os.environ["S3_BUCKET"]
+S3_BUCKET       = os.environ["S3_BUCKET"]
 MEDIUM_FEED_URL = os.environ["MEDIUM_FEED_URL"]
-MAX_POSTS = int(os.environ.get("MAX_POSTS", "5"))
+MAX_POSTS       = int(os.environ.get("MAX_POSTS", "5"))
+BEDROCK_MODEL   = os.environ.get("BEDROCK_MODEL", "anthropic.claude-3-haiku-20240307-v1:0")
+AWS_REGION      = os.environ.get("AWS_REGION", "us-east-1")
 
 NS = {
     "content": "http://purl.org/rss/1.0/modules/content/",
@@ -21,10 +24,12 @@ NS = {
 }
 
 
+def strip_html(html):
+    return re.sub(r"<[^>]+>", " ", html or "")
+
+
 def estimate_reading_time(html):
-    """Strip HTML and estimate reading time at 200 wpm."""
-    text = re.sub(r"<[^>]+>", " ", html)
-    words = len(text.split())
+    words = len(strip_html(html).split())
     return max(1, round(words / 200))
 
 
@@ -36,27 +41,62 @@ def extract_thumbnail(item):
     return None
 
 
+def summarize(title, text):
+    """Generate a 1-2 sentence summary using Claude Haiku via Bedrock."""
+    bedrock = boto3.client("bedrock-runtime", region_name=AWS_REGION)
+
+    # Truncate to keep costs minimal (~3000 chars ≈ 750 tokens)
+    truncated = text[:3000].strip()
+
+    prompt = (
+        f'Blog post title: "{title}"\n\n'
+        f"Content:\n{truncated}\n\n"
+        "Write a single sentence (max 25 words) summarizing the key insight of this post. "
+        "Be direct and specific. No filler phrases like 'This post explores'."
+    )
+
+    response = bedrock.invoke_model(
+        modelId=BEDROCK_MODEL,
+        body=json.dumps({
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 80,
+            "messages": [{"role": "user", "content": prompt}],
+        }),
+    )
+
+    result = json.loads(response["body"].read())
+    return result["content"][0]["text"].strip()
+
+
 def parse_feed(xml_bytes):
-    root = ET.fromstring(xml_bytes)
+    root    = ET.fromstring(xml_bytes)
     channel = root.find("channel")
-    posts = []
+    posts   = []
 
     for item in channel.findall("item")[:MAX_POSTS]:
-        title = (item.findtext("title") or "").strip()
-        link  = (item.findtext("link")  or "").strip()
-
+        title   = (item.findtext("title") or "").strip()
+        link    = (item.findtext("link")  or "").strip()
         pub_raw = (item.findtext("pubDate") or "").strip()
+
         try:
             published = datetime.strptime(pub_raw, "%a, %d %b %Y %H:%M:%S %Z").strftime("%b %d, %Y")
         except Exception:
-            published = ""
+            published = pub_raw
 
         tags = [c.text for c in item.findall("category") if c.text][:3]
 
-        content_el = item.find(f"{{{NS['content']}}}encoded")
-        reading_time = estimate_reading_time(content_el.text or "") if content_el is not None else 1
+        content_el   = item.find(f"{{{NS['content']}}}encoded")
+        content_html = content_el.text if content_el is not None else ""
+        reading_time = estimate_reading_time(content_html)
+        plain_text   = strip_html(content_html)
+        thumbnail    = extract_thumbnail(item)
 
-        thumbnail = extract_thumbnail(item)
+        # Generate summary
+        try:
+            summary = summarize(title, plain_text)
+        except Exception as e:
+            print(f"Bedrock summarization failed for '{title}': {e}")
+            summary = ""
 
         posts.append({
             "title":        title,
@@ -65,6 +105,7 @@ def parse_feed(xml_bytes):
             "tags":         tags,
             "reading_time": reading_time,
             "thumbnail":    thumbnail,
+            "summary":      summary,
         })
 
     return posts

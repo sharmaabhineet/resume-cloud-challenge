@@ -697,6 +697,10 @@
           var tags = (p.tags || []).map(function(t) {
             return '<span class="post-tag">' + t + '</span>';
           }).join('');
+          var summary = p.summary
+            ? '<p class="post-summary">' + p.summary + '</p>' +
+              '<div class="post-ai-credit"><i class="fas fa-robot"></i> Summary by Claude Haiku &middot; AWS Bedrock</div>'
+            : '';
           return '<div class="col-md-6 col-lg-4" data-aos="fade-up">' +
             '<div class="post-card">' +
               '<a href="' + p.url + '" target="_blank" rel="noopener" class="post-title">' + p.title + '</a>' +
@@ -704,6 +708,7 @@
                 '<span><i class="fas fa-calendar-alt"></i> ' + p.published + '</span>' +
                 '<span><i class="fas fa-clock"></i> ' + p.reading_time + ' min read</span>' +
               '</div>' +
+              summary +
               '<div class="post-tags">' + tags + '</div>' +
             '</div>' +
           '</div>';

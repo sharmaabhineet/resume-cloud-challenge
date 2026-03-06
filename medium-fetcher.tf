@@ -31,6 +31,12 @@ resource "aws_iam_role_policy" "lambda_medium_fetcher" {
         Resource = "${aws_s3_bucket.website.arn}/posts.json"
       },
       {
+        Sid      = "Bedrock"
+        Effect   = "Allow"
+        Action   = ["bedrock:InvokeModel"]
+        Resource = "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+      },
+      {
         Sid    = "Logs"
         Effect = "Allow"
         Action = [
@@ -56,13 +62,14 @@ resource "aws_lambda_function" "medium_fetcher" {
   role             = aws_iam_role.lambda_medium_fetcher.arn
   handler          = "medium_fetcher.handler"
   runtime          = "python3.12"
-  timeout          = 30
+  timeout          = 60
 
   environment {
     variables = {
       S3_BUCKET       = aws_s3_bucket.website.bucket
       MEDIUM_FEED_URL = "https://medium.com/feed/@sharmaabhineet"
       MAX_POSTS       = "5"
+      BEDROCK_MODEL   = "anthropic.claude-3-haiku-20240307-v1:0"
     }
   }
 

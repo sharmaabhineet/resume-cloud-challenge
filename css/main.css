@@ -566,6 +566,24 @@ footer {
 }
 .post-meta i { font-size: .7rem; }
 
+.post-summary {
+  font-size: .82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: .6rem;
+  flex-grow: 1;
+}
+
+.post-ai-credit {
+  font-size: .65rem;
+  color: var(--text-muted);
+  opacity: .6;
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  margin-top: .4rem;
+}
+
 .post-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: auto; padding-top: .75rem; }
 .post-tag {
   font-size: .7rem;
