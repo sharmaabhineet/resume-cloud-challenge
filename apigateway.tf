@@ -4,7 +4,7 @@ resource "aws_apigatewayv2_api" "visitor_counter" {
 
   cors_configuration {
     allow_origins = ["https://${var.subdomain}.${var.domain_name}"]
-    allow_methods = ["GET"]
+    allow_methods = ["GET", "POST", "OPTIONS"]
     allow_headers = ["Content-Type"]
     max_age       = 300
   }
@@ -37,8 +37,11 @@ resource "aws_lambda_permission" "visitor_counter" {
   source_arn    = "${aws_apigatewayv2_api.visitor_counter.execution_arn}/*/*"
 }
 
-# Write the API URL to a local JS config file picked up by S3 upload
+# Write API URLs to a local JS config file picked up by S3 upload
 resource "local_file" "api_config" {
-  content  = "window.COUNTER_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/count';"
+  content  = <<-JS
+    window.COUNTER_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/count';
+    window.CONTACT_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/contact';
+  JS
   filename = "${path.module}/scripts/config.js"
 }

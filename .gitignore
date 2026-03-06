@@ -55,3 +55,5 @@ mock-counter-server.py
 # Lambda build artifacts
 lambda/visitor_counter.zip
 lambda/medium_fetcher.zip
+lambda/github_fetcher.zip
+lambda/contact_handler.zip

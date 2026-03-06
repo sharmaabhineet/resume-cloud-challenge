@@ -104,13 +104,18 @@
                 aria-controls="navLinks" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse d-lg-flex justify-content-end gap-1" id="navLinks">
+        <div class="collapse navbar-collapse d-lg-flex justify-content-end align-items-center gap-1" id="navLinks">
           <a href="#about"          class="nav-link-item">About</a>
           <a href="#skills"         class="nav-link-item">Skills</a>
           <a href="#experience"     class="nav-link-item">Experience</a>
-          <a href="#writing"       class="nav-link-item">Writing</a>
+          <a href="#writing"        class="nav-link-item">Writing</a>
+          <a href="#github"         class="nav-link-item">GitHub</a>
           <a href="#education"      class="nav-link-item">Education</a>
           <a href="#certifications" class="nav-link-item">Certs</a>
+          <a href="#contact"        class="nav-link-item">Contact</a>
+          <button id="darkToggle" class="dark-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+            <i class="fas fa-moon" aria-hidden="true"></i>
+          </button>
           <a href="files/abhineet-resume.pdf" target="_blank" class="nav-link-item nav-cta">
             <i class="fas fa-download" aria-hidden="true"></i> Resume
           </a>
@@ -627,6 +632,69 @@
     </div>
   </section>
 
+  <!-- ===== GitHub ===== -->
+  <section id="github" class="section section-alt" aria-label="GitHub projects">
+    <div class="container">
+      <h2 class="section-title">GitHub</h2>
+
+      <!-- AI activity summary -->
+      <div id="github-summary-wrap" style="display:none;" class="mb-4" data-aos="fade-up">
+        <div class="github-summary-card">
+          <p id="github-summary-text" class="mb-1"></p>
+          <div class="post-ai-credit">
+            <i class="fas fa-robot"></i> Summary by Claude Haiku &middot; AWS Bedrock
+            &nbsp;&middot;&nbsp;
+            <span id="github-activity-stats"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Repo cards -->
+      <div id="repos-grid" class="row g-3">
+        <div class="col-12 text-center py-4" id="repos-loading">
+          <span style="color:var(--text-muted); font-size:.875rem;">Loading repositories&hellip;</span>
+        </div>
+      </div>
+
+      <a href="https://github.com/sharmaabhineet" target="_blank" rel="noopener" class="writing-cta">
+        <i class="fab fa-github" aria-hidden="true"></i> View all on GitHub
+      </a>
+    </div>
+  </section>
+
+  <!-- ===== Contact ===== -->
+  <section id="contact" class="section" aria-label="Contact">
+    <div class="container">
+      <h2 class="section-title">Get In Touch</h2>
+      <div class="row justify-content-center">
+        <div class="col-lg-7" data-aos="fade-up">
+          <p class="about-text mb-4">Have a question, opportunity, or just want to say hi? Drop me a message.</p>
+          <form id="contactForm" class="contact-form" novalidate>
+            <div class="mb-3">
+              <label for="contactName" class="form-label">Name</label>
+              <input type="text" class="form-control contact-input" id="contactName"
+                     placeholder="Your name" required maxlength="100" />
+            </div>
+            <div class="mb-3">
+              <label for="contactEmail" class="form-label">Email</label>
+              <input type="email" class="form-control contact-input" id="contactEmail"
+                     placeholder="your@email.com" required maxlength="200" />
+            </div>
+            <div class="mb-3">
+              <label for="contactMessage" class="form-label">Message</label>
+              <textarea class="form-control contact-input" id="contactMessage"
+                        rows="5" placeholder="Your message&hellip;" required maxlength="2000"></textarea>
+            </div>
+            <div id="contactStatus" class="contact-status" style="display:none;"></div>
+            <button type="submit" class="btn-accent" id="contactSubmit">
+              <i class="fas fa-paper-plane" aria-hidden="true"></i> Send Message
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== Footer ===== -->
   <footer class="d-print-none" aria-label="Footer">
     <div class="container">
@@ -730,6 +798,124 @@
         })
         .catch(function() { /* silently fail */ });
     }
+
+    // ---- Dark mode ----
+    (function() {
+      var btn = document.getElementById('darkToggle');
+      var icon = btn.querySelector('i');
+      function applyTheme(dark) {
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        icon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
+      }
+      var stored = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var isDark = stored ? stored === 'dark' : prefersDark;
+      applyTheme(isDark);
+      btn.addEventListener('click', function() {
+        isDark = !isDark;
+        applyTheme(isDark);
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      });
+    })();
+
+    // ---- GitHub repos ----
+    fetch('/repos.json')
+      .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function(data) {
+        var grid = document.getElementById('repos-grid');
+
+        // AI summary
+        if (data.ai_summary) {
+          document.getElementById('github-summary-text').textContent = data.ai_summary;
+          var stats = data.activity
+            ? data.activity.commits_30d + ' commits &middot; ' +
+              data.activity.repos_active + ' repos active (last 30 days)'
+            : '';
+          document.getElementById('github-activity-stats').innerHTML = stats;
+          document.getElementById('github-summary-wrap').style.display = '';
+        }
+
+        if (!data.repos || data.repos.length === 0) {
+          grid.innerHTML = '<div class="col-12"><p style="color:var(--text-muted);">No repositories found.</p></div>';
+          return;
+        }
+        grid.innerHTML = data.repos.map(function(r) {
+          var lang = r.language
+            ? '<span class="repo-lang"><span class="repo-lang-dot"></span>' + r.language + '</span>'
+            : '';
+          var stars = r.stars > 0
+            ? '<span><i class="fas fa-star"></i> ' + r.stars + '</span>'
+            : '';
+          var lock = r.private
+            ? '<i class="fas fa-lock repo-private" title="Private"></i> '
+            : '';
+          var topics = (r.topics || []).slice(0, 3).map(function(t) {
+            return '<span class="post-tag">' + t + '</span>';
+          }).join('');
+          return '<div class="col-md-6 col-lg-4" data-aos="fade-up">' +
+            '<div class="repo-card">' +
+              '<div class="repo-name">' + lock +
+                '<a href="' + r.url + '" target="_blank" rel="noopener">' + r.name + '</a>' +
+              '</div>' +
+              '<p class="repo-desc">' + (r.description || '') + '</p>' +
+              '<div class="repo-meta">' + lang + stars + '</div>' +
+              '<div class="post-tags mt-2">' + topics + '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+        if (window.AOS) AOS.refresh();
+      })
+      .catch(function() {
+        document.getElementById('repos-loading').innerHTML =
+          '<p style="color:var(--text-muted);font-size:.875rem;">Repositories coming soon.</p>';
+      });
+
+    // ---- Contact form ----
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (!window.CONTACT_API_URL) {
+        document.getElementById('contactStatus').style.display = '';
+        document.getElementById('contactStatus').className = 'contact-status contact-status-error';
+        document.getElementById('contactStatus').textContent = 'Contact API not configured yet.';
+        return;
+      }
+      var btn = document.getElementById('contactSubmit');
+      var status = document.getElementById('contactStatus');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending&hellip;';
+      status.style.display = 'none';
+
+      fetch(window.CONTACT_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name:    document.getElementById('contactName').value,
+          email:   document.getElementById('contactEmail').value,
+          message: document.getElementById('contactMessage').value,
+        }),
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.ok) {
+            status.className = 'contact-status contact-status-ok';
+            status.textContent = data.message || 'Message sent!';
+            document.getElementById('contactForm').reset();
+          } else {
+            status.className = 'contact-status contact-status-error';
+            status.textContent = data.error || 'Something went wrong.';
+          }
+          status.style.display = '';
+        })
+        .catch(function() {
+          status.className = 'contact-status contact-status-error';
+          status.textContent = 'Failed to send. Please email me directly.';
+          status.style.display = '';
+        })
+        .finally(function() {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+        });
+    });
   </script>
 
 </body>

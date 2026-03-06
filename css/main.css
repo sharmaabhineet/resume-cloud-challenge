@@ -723,3 +723,210 @@ footer {
   .hero-buttons { flex-direction: column; align-items: flex-start; }
   .btn-accent, .btn-ghost { width: 100%; justify-content: center; }
 }
+
+/* ------ Dark Mode Toggle ------ */
+.dark-toggle {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.6);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .82rem;
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s;
+  padding: 0;
+}
+.dark-toggle:hover { background: rgba(255,255,255,.14); color: #fff; }
+
+/* ------ Dark Mode Theme ------ */
+[data-theme="dark"] {
+  --primary:      #e2e8f0;
+  --accent:       #818cf8;
+  --accent-light: #a5b4fc;
+  --accent-pale:  rgba(99,102,241,.12);
+  --text:         #cbd5e1;
+  --text-muted:   #94a3b8;
+  --bg:           #0f172a;
+  --white:        #1e293b;
+  --border:       #334155;
+  --shadow-sm:    0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+  --shadow:       0 4px 6px -1px rgba(0,0,0,.35), 0 2px 4px -2px rgba(0,0,0,.25);
+  --shadow-lg:    0 10px 15px -3px rgba(0,0,0,.5), 0 4px 6px -4px rgba(0,0,0,.3);
+}
+
+[data-theme="dark"] body { background: var(--bg); color: var(--text); }
+
+[data-theme="dark"] .section-alt { background: var(--white); }
+
+[data-theme="dark"] .chip {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--text);
+}
+[data-theme="dark"] .chip.featured {
+  background: var(--accent-pale);
+  border-color: rgba(129,140,248,.25);
+  color: var(--accent);
+}
+
+[data-theme="dark"] .tl-card,
+[data-theme="dark"] .edu-card,
+[data-theme="dark"] .post-card,
+[data-theme="dark"] .repo-card,
+[data-theme="dark"] .github-summary-card {
+  background: var(--white);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .tl-item::before {
+  border-color: var(--bg);
+}
+
+[data-theme="dark"] .career-tl::before {
+  background: linear-gradient(to right, rgba(129,140,248,.15), var(--accent));
+}
+
+[data-theme="dark"] .ct-dot {
+  border-color: var(--bg);
+}
+[data-theme="dark"] .ct-dot.ct-edu {
+  background: var(--bg);
+  border-color: var(--accent);
+}
+
+[data-theme="dark"] .stat-badge {
+  background: var(--accent-pale);
+  border-color: rgba(129,140,248,.2);
+}
+
+[data-theme="dark"] .thesis-card {
+  background: linear-gradient(135deg, var(--accent-pale) 0%, var(--white) 100%);
+  border-color: rgba(129,140,248,.2);
+}
+
+[data-theme="dark"] .contact-input {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--text);
+}
+[data-theme="dark"] .contact-input:focus {
+  border-color: var(--accent);
+  background: var(--bg);
+  color: var(--text);
+}
+[data-theme="dark"] .contact-input::placeholder { color: var(--text-muted); }
+
+[data-theme="dark"] .form-label { color: var(--text); }
+
+/* ------ GitHub Repos ------ */
+.github-summary-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  font-size: .9rem;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.repo-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow);
+  height: 100%;
+  transition: box-shadow .2s, transform .2s;
+  display: flex;
+  flex-direction: column;
+}
+.repo-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+.repo-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: .92rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: .4rem;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+.repo-name a { color: inherit; text-decoration: none; }
+.repo-name a:hover { color: var(--accent); }
+
+.repo-private {
+  font-size: .72rem;
+  color: var(--text-muted);
+}
+
+.repo-desc {
+  font-size: .82rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-bottom: .75rem;
+  flex-grow: 1;
+}
+
+.repo-meta {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-size: .75rem;
+  color: var(--text-muted);
+}
+
+.repo-lang {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+}
+.repo-lang-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+/* ------ Contact Form ------ */
+.contact-form { }
+
+.contact-input {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: .9rem;
+  padding: .65rem 1rem;
+  width: 100%;
+  transition: border-color .2s, box-shadow .2s;
+}
+.contact-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+}
+.contact-input::placeholder { color: var(--text-muted); }
+
+textarea.contact-input { resize: vertical; min-height: 120px; }
+
+.contact-status {
+  border-radius: var(--radius-sm);
+  padding: .65rem 1rem;
+  font-size: .875rem;
+  margin-bottom: 1rem;
+}
+.contact-status-ok {
+  background: rgba(16,185,129,.1);
+  border: 1px solid rgba(16,185,129,.25);
+  color: #059669;
+}
+.contact-status-error {
+  background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.2);
+  color: #dc2626;
+}
