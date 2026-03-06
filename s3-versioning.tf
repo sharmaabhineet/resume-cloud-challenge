@@ -1,5 +1,6 @@
-resource "aws_s3_bucket_versioning" "s3_versioning" {
-  bucket = data.aws_s3_bucket.selected-bucket.id
+resource "aws_s3_bucket_versioning" "website" {
+  bucket = aws_s3_bucket.website.id
+
   versioning_configuration {
     status = "Enabled"
   }

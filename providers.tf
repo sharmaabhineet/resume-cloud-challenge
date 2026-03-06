@@ -9,6 +9,6 @@ terraform {
 
 # Configure the AWS Provider
 provider "aws" {
-  profile = var.profile
+  profile = "resume-deployer"
   region = var.region
 }

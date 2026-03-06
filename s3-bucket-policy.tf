@@ -1,39 +1,44 @@
-resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_ownership" {
-  bucket = data.aws_s3_bucket.selected-bucket.id
+resource "aws_s3_bucket_ownership_controls" "website" {
+  bucket = aws_s3_bucket.website.id
+
   rule {
-    object_ownership = "BucketOwnerPreferred"
+    object_ownership = "BucketOwnerEnforced"
   }
-  depends_on = [aws_s3_bucket_public_access_block.access-block]
 }
 
-resource "aws_s3_bucket_public_access_block" "access-block" {
-  bucket = data.aws_s3_bucket.selected-bucket.id
+resource "aws_s3_bucket_public_access_block" "website" {
+  bucket = aws_s3_bucket.website.id
 
-  block_public_acls       = false
+  block_public_acls       = true
   block_public_policy     = false
-  ignore_public_acls      = false
+  ignore_public_acls      = true
   restrict_public_buckets = false
+
+  depends_on = [aws_s3_bucket_ownership_controls.website]
 }
 
-resource "aws_s3_bucket_policy" "bucket-policy" {
-  bucket = data.aws_s3_bucket.selected-bucket.id
-  policy = data.aws_iam_policy_document.iam-policy-1.json
-}
-
-data "aws_iam_policy_document" "iam-policy-1" {
+data "aws_iam_policy_document" "website" {
   statement {
     sid    = "AllowPublicRead"
     effect = "Allow"
-resources = [
+
+    resources = [
       "arn:aws:s3:::${var.bucket_name}",
       "arn:aws:s3:::${var.bucket_name}/*",
     ]
-actions = ["S3:GetObject"]
-principals {
+
+    actions = ["s3:GetObject"]
+
+    principals {
       type        = "*"
       identifiers = ["*"]
     }
   }
+}
 
-  depends_on = [aws_s3_bucket_public_access_block.access-block]
+resource "aws_s3_bucket_policy" "website" {
+  bucket = aws_s3_bucket.website.id
+  policy = data.aws_iam_policy_document.website.json
+
+  depends_on = [aws_s3_bucket_public_access_block.website]
 }

@@ -1,18 +1,20 @@
 resource "aws_route53_zone" "main" {
-  name = var.domain_name
-  tags = {
-    Name = "www.${var.domain_name}"
-    description = var.domain_name
-  }
+  name    = var.domain_name
   comment = var.domain_name
+
+  tags = {
+    Name = var.domain_name
+  }
 }
-resource "aws_route53_record" "www-a" {
+
+resource "aws_route53_record" "website" {
   zone_id = aws_route53_zone.main.zone_id
-  name = "www.${var.domain_name}"
-  type = "A"
-alias {
-    name = data.aws_s3_bucket.selected-bucket.website_endpoint
-    zone_id = data.aws_s3_bucket.selected-bucket.hosted_zone_id
+  name    = "${var.subdomain}.${var.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.website.domain_name
+    zone_id                = aws_cloudfront_distribution.website.hosted_zone_id
     evaluate_target_health = false
   }
 }

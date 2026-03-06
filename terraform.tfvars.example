@@ -1,0 +1,4 @@
+domain_name = "example.com"
+bucket_name = "com.example"
+subdomain   = "resume"
+region      = "us-east-1"
