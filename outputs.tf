@@ -27,3 +27,8 @@ output "route53_zone_id" {
   description = "Route53 hosted zone ID"
   value       = aws_route53_zone.main.zone_id
 }
+
+output "visitor_counter_api_url" {
+  description = "Visitor counter API endpoint"
+  value       = "${aws_apigatewayv2_stage.visitor_counter.invoke_url}/count"
+}
