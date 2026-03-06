@@ -111,3 +111,19 @@ resource "aws_s3_object" "files" {
   source   = "files/${each.value}"
   etag     = filemd5("files/${each.value}")
 }
+
+resource "aws_s3_object" "sitemap" {
+  bucket       = aws_s3_bucket.website.bucket
+  key          = "sitemap.xml"
+  source       = "sitemap.xml"
+  content_type = "application/xml"
+  etag         = filemd5("sitemap.xml")
+}
+
+resource "aws_s3_object" "robots" {
+  bucket       = aws_s3_bucket.website.bucket
+  key          = "robots.txt"
+  source       = "robots.txt"
+  content_type = "text/plain"
+  etag         = filemd5("robots.txt")
+}
