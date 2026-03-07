@@ -669,7 +669,7 @@
       <div class="row justify-content-center">
         <div class="col-lg-7" data-aos="fade-up">
           <p class="about-text mb-4">Have a question, opportunity, or just want to say hi? Drop me a message.</p>
-          <form id="contactForm" class="contact-form" novalidate>
+          <form id="contactForm" class="contact-form" novalidate autocomplete="off">
             <div class="mb-3">
               <label for="contactName" class="form-label">Name</label>
               <input type="text" class="form-control contact-input" id="contactName"
@@ -684,6 +684,15 @@
               <label for="contactMessage" class="form-label">Message</label>
               <textarea class="form-control contact-input" id="contactMessage"
                         rows="5" placeholder="Your message&hellip;" required maxlength="2000"></textarea>
+            </div>
+            <!-- Honeypot fields — hidden from humans, bots fill these in -->
+            <div class="hp-field" aria-hidden="true" tabindex="-1">
+              <label for="hp-website">Website</label>
+              <input type="text" id="hp-website" name="website" tabindex="-1" autocomplete="off" />
+            </div>
+            <div class="hp-field" aria-hidden="true" tabindex="-1">
+              <label for="hp-phone">Phone</label>
+              <input type="text" id="hp-phone" name="phone" tabindex="-1" autocomplete="off" />
             </div>
             <div id="contactStatus" class="contact-status" style="display:none;"></div>
             <button type="submit" class="btn-accent" id="contactSubmit">
@@ -892,6 +901,8 @@
           name:    document.getElementById('contactName').value,
           email:   document.getElementById('contactEmail').value,
           message: document.getElementById('contactMessage').value,
+          website: document.getElementById('hp-website').value,
+          phone:   document.getElementById('hp-phone').value,
         }),
       })
         .then(function(r) { return r.json(); })

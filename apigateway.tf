@@ -14,6 +14,11 @@ resource "aws_apigatewayv2_stage" "visitor_counter" {
   api_id      = aws_apigatewayv2_api.visitor_counter.id
   name        = "$default"
   auto_deploy = true
+
+  default_route_settings {
+    throttling_rate_limit  = 10   # max sustained requests/sec across all routes
+    throttling_burst_limit = 5    # max concurrent burst
+  }
 }
 
 resource "aws_apigatewayv2_integration" "visitor_counter" {

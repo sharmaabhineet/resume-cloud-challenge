@@ -41,6 +41,11 @@ def handler(event, context):
     except Exception:
         return respond(400, {"error": "Invalid JSON"})
 
+    # Honeypot — bots fill hidden fields, humans don't
+    if body.get("website") or body.get("phone"):
+        print("Honeypot triggered — likely bot submission")
+        return respond(200, {"ok": True, "message": "Thanks! I'll get back to you soon."})
+
     name    = (body.get("name")    or "").strip()[:100]
     email   = (body.get("email")   or "").strip()[:200]
     message = (body.get("message") or "").strip()[:2000]

@@ -930,3 +930,14 @@ textarea.contact-input { resize: vertical; min-height: 120px; }
   border: 1px solid rgba(239,68,68,.2);
   color: #dc2626;
 }
+
+/* Honeypot — visually hidden but not display:none so bots don't skip it */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
