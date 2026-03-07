@@ -37,11 +37,20 @@ resource "aws_lambda_permission" "visitor_counter" {
   source_arn    = "${aws_apigatewayv2_api.visitor_counter.execution_arn}/*/*"
 }
 
-# Write API URLs to a local JS config file picked up by S3 upload
+# Write API URLs to local file (used by mock dev server)
 resource "local_file" "api_config" {
   content  = <<-JS
     window.COUNTER_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/count';
     window.CONTACT_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/contact';
   JS
   filename = "${path.module}/scripts/config.js"
+}
+
+# Upload config.js directly to S3 — explicit resource so CI/CD doesn't need the file on disk
+resource "aws_s3_object" "api_config" {
+  bucket       = aws_s3_bucket.website.bucket
+  key          = "scripts/config.js"
+  content      = "window.COUNTER_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/count';\nwindow.CONTACT_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/contact';\n"
+  content_type = "application/javascript"
+  etag         = md5("window.COUNTER_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/count';\nwindow.CONTACT_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/contact';\n")
 }
