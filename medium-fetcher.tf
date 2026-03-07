@@ -37,6 +37,12 @@ resource "aws_iam_role_policy" "lambda_medium_fetcher" {
         Resource = "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
       },
       {
+        Sid      = "BedrockMarketplace"
+        Effect   = "Allow"
+        Action   = ["aws-marketplace:ViewSubscriptions", "aws-marketplace:Subscribe"]
+        Resource = "*"
+      },
+      {
         Sid    = "Logs"
         Effect = "Allow"
         Action = [
