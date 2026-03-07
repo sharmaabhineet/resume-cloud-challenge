@@ -132,7 +132,7 @@ def handler(event, context):
         Key="posts.json",
         Body=json.dumps(payload, ensure_ascii=False, indent=2),
         ContentType="application/json",
-        CacheControl="max-age=3600",
+        CacheControl="no-cache, no-store, must-revalidate",
     )
 
     print(f"Wrote {len(posts)} posts to s3://{S3_BUCKET}/posts.json")

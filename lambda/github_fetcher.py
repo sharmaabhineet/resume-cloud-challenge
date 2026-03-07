@@ -224,7 +224,7 @@ def handler(event, context):
         Key="repos.json",
         Body=json.dumps(payload, ensure_ascii=False),
         ContentType="application/json",
-        CacheControl="max-age=3600",
+        CacheControl="no-cache, no-store, must-revalidate",
     )
 
     print(f"Wrote repos.json — {len(repos)} repos, {activity['commits_30d']} commits/30d")
