@@ -123,39 +123,36 @@ def fetch_recent_repos(token):
 
 
 def fetch_activity_stats(token):
-    """Returns commit count and active repo set over the last 30 days."""
-    cutoff = datetime.now(timezone.utc) - timedelta(days=30)
-    commits = 0
-    active_repos = set()
-    page = 1
-    while page <= 5:  # cap at 5 pages (150 events)
-        try:
-            events = rest_get(
-                f"/users/{GITHUB_USER}/events?per_page=30&page={page}",
-                token,
-            )
-        except Exception:
-            break
-        if not events:
-            break
-        for ev in events:
-            created = ev.get("created_at", "")
-            try:
-                ts = datetime.fromisoformat(created.replace("Z", "+00:00"))
-            except Exception:
-                continue
-            if ts < cutoff:
-                page = 999  # signal done
-                break
-            if ev["type"] == "PushEvent":
-                commits += ev.get("payload", {}).get("size", 0)
-                active_repos.add(ev["repo"]["name"])
-        page += 1
-
+    """Returns commit/PR/issue counts over the last 30 days, including private repos."""
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=30)
+    query = f"""
+    {{
+      user(login: "{GITHUB_USER}") {{
+        contributionsCollection(
+          from: "{cutoff.strftime('%Y-%m-%dT%H:%M:%SZ')}",
+          to:   "{now.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+        ) {{
+          totalCommitContributions
+          totalPullRequestContributions
+          totalIssueContributions
+          totalRepositoriesWithContributedCommits
+        }}
+      }}
+    }}
+    """
+    result = graphql(query, token)
+    col = (
+        result.get("data", {})
+              .get("user", {})
+              .get("contributionsCollection", {})
+    )
     return {
-        "commits_30d":    commits,
-        "repos_active":   len(active_repos),
-        "active_repo_list": sorted(active_repos),
+        "commits_30d":   col.get("totalCommitContributions", 0),
+        "prs_30d":       col.get("totalPullRequestContributions", 0),
+        "issues_30d":    col.get("totalIssueContributions", 0),
+        "repos_active":  col.get("totalRepositoriesWithContributedCommits", 0),
+        "includes_private": True,
     }
 
 
@@ -167,7 +164,9 @@ def bedrock_summary(repos, activity):
     prompt = (
         f"You are summarising a software engineer's GitHub activity for their resume website.\n\n"
         f"Pinned repositories:\n{repo_list}\n\n"
-        f"Last 30 days: {activity['commits_30d']} commits across {activity['repos_active']} active repos.\n\n"
+        f"Last 30 days (public + private repos): {activity['commits_30d']} commits, "
+        f"{activity['prs_30d']} pull requests, {activity['issues_30d']} issues "
+        f"across {activity['repos_active']} active repos.\n\n"
         f"Write 1-2 sentences (max 40 words) highlighting the breadth of their work and recent momentum. "
         f"Write in third person. Do not start with 'Abhineet'."
     )
@@ -227,5 +226,5 @@ def handler(event, context):
         CacheControl="no-cache, no-store, must-revalidate",
     )
 
-    print(f"Wrote repos.json — {len(repos)} repos, {activity['commits_30d']} commits/30d")
+    print(f"Wrote repos.json — {len(repos)} repos, {activity['commits_30d']} commits, {activity['prs_30d']} PRs, {activity['issues_30d']} issues/30d (incl. private)")
     return {"statusCode": 200, "body": f"{len(repos)} repos written"}
