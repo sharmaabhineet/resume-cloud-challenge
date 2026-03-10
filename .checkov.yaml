@@ -1,0 +1,21 @@
+skip-check:
+  # WAF — cost-prohibitive (~$5+/month) for a personal static site
+  - CKV_AWS_68
+
+  # Origin failover — single S3 website origin; HA not required for personal site
+  - CKV_AWS_310
+
+  # Default root object — handled by S3 website configuration (index.html)
+  - CKV_AWS_305
+
+  # Geo restriction — global resume site; intentionally unrestricted
+  - CKV_AWS_374
+
+  # CloudFront access logging — adds S3 cost; not needed for personal site
+  - CKV_AWS_86
+
+  # API Gateway authorization — visitor counter and contact form are intentionally public
+  - CKV_AWS_309
+
+  # API Gateway access logging — CloudWatch log cost; throttling is the mitigation
+  - CKV_AWS_76
