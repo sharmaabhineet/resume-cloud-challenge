@@ -9,7 +9,7 @@ import boto3
 
 SES_REGION  = os.environ.get("SES_REGION", "us-east-1")
 FROM_EMAIL  = os.environ["FROM_EMAIL"]    # noreply@sharmaabhineet.com
-TO_EMAIL    = os.environ["TO_EMAIL"]      # sharma.abhineet31@gmail.com
+TO_EMAIL    = os.environ["TO_EMAIL"]
 
 ses = boto3.client("ses", region_name=SES_REGION)
 

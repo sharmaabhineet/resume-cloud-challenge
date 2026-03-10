@@ -18,3 +18,15 @@ resource "aws_route53_record" "website" {
     evaluate_target_health = false
   }
 }
+
+resource "aws_route53_record" "resume_redirect" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "resume.${var.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.resume_redirect.domain_name
+    zone_id                = aws_cloudfront_distribution.resume_redirect.hosted_zone_id
+    evaluate_target_health = false
+  }
+}

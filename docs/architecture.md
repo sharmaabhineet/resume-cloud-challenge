@@ -155,8 +155,8 @@ All resources are managed by Terraform (local state). Provider versions are pinn
 ```ini
 # ~/.aws/config
 [profile resume-deployer]
-sso_session    = resume-depolyer-asharma
-sso_account_id = 329599648113
+sso_session    = <your-sso-session-name>
+sso_account_id = <your-aws-account-id>
 sso_role_name  = ResumeDeployer
 ```
 
@@ -431,7 +431,7 @@ The GitHub Personal Access Token used by the `resume-github-fetcher` Lambda expi
 2. **Update the secret in AWS Secrets Manager**
    ```bash
    aws secretsmanager put-secret-value \
-     --secret-id arn:aws:secretsmanager:us-east-1:329599648113:secret:resume/github-pat-IbP2FD \
+     --secret-id arn:aws:secretsmanager:us-east-1:<your-aws-account-id>:secret:resume/github-pat-<suffix> \
      --secret-string '{"pat":"ghp_YOUR_NEW_TOKEN_HERE"}' \
      --profile resume-deployer
    ```

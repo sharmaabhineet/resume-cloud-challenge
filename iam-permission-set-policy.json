@@ -90,7 +90,14 @@
         "cloudfront:CreateInvalidation",
         "cloudfront:ListTagsForResource",
         "cloudfront:TagResource",
-        "cloudfront:UntagResource"
+        "cloudfront:UntagResource",
+        "cloudfront:CreateFunction",
+        "cloudfront:DeleteFunction",
+        "cloudfront:GetFunction",
+        "cloudfront:UpdateFunction",
+        "cloudfront:PublishFunction",
+        "cloudfront:DescribeFunction",
+        "cloudfront:ListFunctions"
       ],
       "Resource": "*"
     },

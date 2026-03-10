@@ -17,5 +17,10 @@ variable "region" {
 variable "subdomain" {
   type        = string
   description = "Subdomain for the resume website (e.g. resume, www)"
-  default     = "resume"
+  default     = "portfolio"
+}
+
+variable "to_email" {
+  type        = string
+  description = "Email address to receive contact form submissions"
 }

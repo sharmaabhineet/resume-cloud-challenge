@@ -104,7 +104,7 @@ resource "aws_lambda_function" "contact_handler" {
   environment {
     variables = {
       FROM_EMAIL     = "noreply@${var.domain_name}"
-      TO_EMAIL       = "sharma.abhineet31@gmail.com"
+      TO_EMAIL       = var.to_email
       ALLOWED_ORIGIN = "https://${var.subdomain}.${var.domain_name}"
       SES_REGION     = var.region
     }
