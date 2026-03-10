@@ -123,7 +123,7 @@ def fetch_recent_repos(token):
 
 
 def fetch_activity_stats(token):
-    """Returns commit/PR/issue counts over the last 30 days, including private repos."""
+    """Returns commit/PR/issue counts and contributed repo list over the last 30 days, including private repos."""
     now = datetime.now(timezone.utc)
     cutoff = now - timedelta(days=30)
     query = f"""
@@ -137,6 +137,12 @@ def fetch_activity_stats(token):
           totalPullRequestContributions
           totalIssueContributions
           totalRepositoriesWithContributedCommits
+          commitContributionsByRepository(maxRepositories: 10) {{
+            repository {{
+              nameWithOwner
+              isPrivate
+            }}
+          }}
         }}
       }}
     }}
@@ -147,27 +153,67 @@ def fetch_activity_stats(token):
               .get("user", {})
               .get("contributionsCollection", {})
     )
+    contributed_repos = [
+        {
+            "name":    entry["repository"]["nameWithOwner"],
+            "private": entry["repository"]["isPrivate"],
+        }
+        for entry in col.get("commitContributionsByRepository", [])
+        if entry.get("repository")
+    ]
     return {
-        "commits_30d":   col.get("totalCommitContributions", 0),
-        "prs_30d":       col.get("totalPullRequestContributions", 0),
-        "issues_30d":    col.get("totalIssueContributions", 0),
-        "repos_active":  col.get("totalRepositoriesWithContributedCommits", 0),
-        "includes_private": True,
+        "commits_30d":       col.get("totalCommitContributions", 0),
+        "prs_30d":           col.get("totalPullRequestContributions", 0),
+        "issues_30d":        col.get("totalIssueContributions", 0),
+        "repos_active":      col.get("totalRepositoriesWithContributedCommits", 0),
+        "includes_private":  True,
+        "contributed_repos": contributed_repos,
     }
 
 
-def bedrock_summary(repos, activity):
+def fetch_commit_messages(token, contributed_repos, since_iso):
+    """Fetch recent commit messages from PUBLIC repos only. Private repos contribute counts only."""
+    messages = []
+    for repo in contributed_repos[:8]:  # cap at 8 repos
+        if repo["private"]:
+            continue  # never fetch content from private repos
+        repo_name = repo["name"]
+        label = repo_name.split("/")[-1]
+        try:
+            commits = rest_get(
+                f"/repos/{repo_name}/commits"
+                f"?author={GITHUB_USER}&since={since_iso}&per_page=15",
+                token,
+            )
+            for c in commits[:15]:
+                msg = c.get("commit", {}).get("message", "").split("\n")[0].strip()
+                if msg:
+                    messages.append(f"[{label}] {msg}")
+        except Exception as e:
+            print(f"Could not fetch commits for {repo_name}: {e}")
+    return messages
+
+
+def bedrock_summary(repos, activity, commit_messages):
     repo_list = "\n".join(
         f"- {r['name']} ({r['language']}): {r['description'][:120]}"
         for r in repos
     )
+    private_repos = activity["repos_active"] - sum(
+        1 for r in activity.get("contributed_repos", []) if not r["private"]
+    )
+    commits_excerpt = "\n".join(commit_messages[:40]) if commit_messages else "No public commit messages available."
     prompt = (
         f"You are summarising a software engineer's GitHub activity for their resume website.\n\n"
         f"Pinned repositories:\n{repo_list}\n\n"
-        f"Last 30 days (public + private repos): {activity['commits_30d']} commits, "
+        f"Last 30 days — total activity (public + private repos): {activity['commits_30d']} commits, "
         f"{activity['prs_30d']} pull requests, {activity['issues_30d']} issues "
-        f"across {activity['repos_active']} active repos.\n\n"
-        f"Write 1-2 sentences (max 40 words) highlighting the breadth of their work and recent momentum. "
+        f"across {activity['repos_active']} repos "
+        f"({private_repos} of which are private — no details available).\n\n"
+        f"Recent commit messages from public repos only:\n{commits_excerpt}\n\n"
+        f"Write 2-3 sentences (max 60 words) summarising the kinds of projects and technical areas "
+        f"worked on, based on the public commit messages. Acknowledge that additional private work "
+        f"is reflected in the activity counts. Focus on themes and technologies, not repo names. "
         f"Write in third person. Do not start with 'Abhineet'."
     )
     body = json.dumps({
@@ -204,17 +250,21 @@ def handler(event, context):
 
     activity = fetch_activity_stats(token)
 
+    since_iso = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    commit_messages = fetch_commit_messages(token, activity.get("contributed_repos", []), since_iso)
+
     try:
-        ai_summary = bedrock_summary(repos, activity)
+        ai_summary = bedrock_summary(repos, activity, commit_messages)
     except Exception as e:
         print(f"Bedrock summary failed: {e}")
         ai_summary = ""
 
+    public_activity = {k: v for k, v in activity.items() if k != "contributed_repos"}
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source":        source,
         "repos":         repos,
-        "activity":      activity,
+        "activity":      public_activity,
         "ai_summary":    ai_summary,
     }
 
