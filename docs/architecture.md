@@ -14,71 +14,77 @@
 4. [IAM & Security](#4-iam--security)
 5. [Visitor Counter](#5-visitor-counter)
 6. [Medium Blog Fetcher](#6-medium-blog-fetcher)
-7. [Website Design](#7-website-design)
-8. [SEO & Analytics](#8-seo--analytics)
-9. [Cost](#9-cost)
-10. [Operations Runbook](#10-operations-runbook)
-11. [Repository Structure](#11-repository-structure)
+7. [GitHub Repo Fetcher](#7-github-repo-fetcher)
+8. [Contact Form](#8-contact-form)
+9. [Website Design](#9-website-design)
+10. [SEO & Analytics](#10-seo--analytics)
+11. [Cost](#11-cost)
+12. [Operations Runbook](#12-operations-runbook)
+13. [Repository Structure](#13-repository-structure)
 
 ---
 
 ## 1. Project Overview
 
-A fully cloud-hosted resume website that demonstrates real-world AWS skills:
+A fully cloud-hosted portfolio website that demonstrates real-world AWS skills:
 
 - Static site hosted on **S3**, served via **CloudFront** with HTTPS
-- Custom domain (`resume.sharmaabhineet.com`) via **Route53** and **ACM**
+- Custom domain (`portfolio.sharmaabhineet.com`) via **Route53** and **ACM**; `resume.sharmaabhineet.com` 301 redirects to `portfolio.`
 - Serverless **visitor counter** (Lambda + API Gateway + DynamoDB)
+- **Contact form** with spam protection (Lambda + API Gateway + SES)
 - Weekly **Medium blog post fetcher** with AI-generated summaries (Lambda + EventBridge + Bedrock)
+- Weekly **GitHub repo fetcher** with AI-generated activity summaries (Lambda + EventBridge + Secrets Manager + Bedrock)
 - **Google Analytics** (GA4) for real-world traffic insights
 - All infrastructure managed as code with **Terraform**
 - Least-privilege IAM via **AWS IAM Identity Center** (SSO Permission Set)
+- CI/CD via **GitHub Actions** (OIDC, Terraform apply, CloudFront invalidation)
 
 ---
 
 ## 2. Architecture
 
 ```
-                          ┌─────────────────────────────────────┐
-                          │           resume.sharmaabhineet.com  │
-                          │              (Route53 A record)       │
-                          └──────────────────┬──────────────────┘
-                                             │
-                          ┌──────────────────▼──────────────────┐
-                          │         CloudFront Distribution       │
-                          │   TLS 1.2 · CachingOptimized policy  │
-                          │   ACM wildcard cert (*.sharmaabhineet)│
-                          └──────┬──────────────────┬───────────┘
-                                 │                  │
-               ┌─────────────────▼──┐          ┌───▼─────────────────┐
-               │   S3 Bucket         │          │  API Gateway (HTTP)  │
-               │   com.sharmaabhineet│          │  GET /count          │
-               │   - index.html      │          └───────────┬─────────┘
-               │   - css/            │                      │
-               │   - scripts/        │          ┌───────────▼─────────┐
-               │   - images/         │          │  Lambda              │
-               │   - posts.json      │          │  visitor_counter.py  │
-               │   - sitemap.xml     │          └───────────┬─────────┘
-               │   - robots.txt      │                      │
-               └─────────────────────┘          ┌───────────▼─────────┐
-                                                 │  DynamoDB            │
-                                                 │  resume-visitor-     │
-                                                 │  counter             │
-                                                 └─────────────────────┘
+  resume.sharmaabhineet.com          portfolio.sharmaabhineet.com
+  (Route53 A record)                 (Route53 A record)
+          │                                   │
+  ┌───────▼──────────────┐      ┌────────────▼────────────────┐
+  │  CloudFront (redirect)│      │  CloudFront (portfolio)      │
+  │  CloudFront Function  │      │  TLS 1.2 · CachingOptimized │
+  │  → 301 to portfolio.  │      │  ACM wildcard cert           │
+  └───────────────────────┘      └──────┬──────────┬───────────┘
+                                        │          │
+                          ┌─────────────▼──┐  ┌───▼──────────────────┐
+                          │  S3 Bucket      │  │  API Gateway (HTTP)   │
+                          │  com.sharmaabhi │  │  GET  /count          │
+                          │  - index.html   │  │  POST /contact        │
+                          │  - css/         │  └───┬──────────┬────────┘
+                          │  - scripts/     │      │          │
+                          │  - images/      │  ┌───▼───┐  ┌───▼────────┐
+                          │  - posts.json   │  │Lambda │  │Lambda      │
+                          │  - repos.json   │  │visitor│  │contact_    │
+                          │  - sitemap.xml  │  │counter│  │handler.py  │
+                          └─────────────────┘  └───┬───┘  └───┬────────┘
+                                                   │          │
+                                              ┌────▼────┐  ┌──▼──┐
+                                              │DynamoDB │  │ SES │
+                                              └─────────┘  └─────┘
 
-  ┌─────────────────────────────────────────────────────────────────┐
-  │  EventBridge (cron: every Monday 09:00 UTC)                      │
-  └──────────────────────────┬──────────────────────────────────────┘
-                             │
-               ┌─────────────▼──────────────┐
-               │  Lambda                     │
-               │  medium_fetcher.py          │
-               │  - Fetch Medium RSS feed    │
-               │  - Strip HTML               │
-               │  - Summarize via Bedrock    │
-               │    (Claude 3 Haiku)         │
-               │  - Write posts.json → S3    │
-               └─────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────┐
+  │  EventBridge cron — every Monday 09:00 UTC                        │
+  └────────────────────┬─────────────────────┬────────────────────────┘
+                       │                     │
+           ┌───────────▼───────┐   ┌─────────▼──────────┐
+           │  Lambda            │   │  Lambda             │
+           │  medium_fetcher.py │   │  github_fetcher.py  │
+           │  - Medium RSS feed │   │  - GitHub GraphQL   │
+           │  - Bedrock summary │   │  - Bedrock summary  │
+           │  - posts.json → S3 │   │  - repos.json → S3  │
+           └────────────────────┘   └──────────┬──────────┘
+                                               │
+                                    ┌──────────▼──────────┐
+                                    │  Secrets Manager     │
+                                    │  GitHub PAT          │
+                                    └─────────────────────┘
 ```
 
 ---
@@ -100,7 +106,7 @@ All resources are managed by Terraform (local state). Provider versions are pinn
 | File | Resources |
 |---|---|
 | `providers.tf` | Provider configuration, AWS profile (`resume-deployer`) |
-| `variables.tf` | `domain_name`, `bucket_name`, `region`, `subdomain` |
+| `variables.tf` | `domain_name`, `bucket_name`, `region`, `subdomain`, `to_email` |
 | `s3-bucket.tf` | `aws_s3_bucket` |
 | `s3-bucket-policy.tf` | Ownership controls, public access block, bucket policy |
 | `s3-website.tf` | Static website configuration |
@@ -108,13 +114,17 @@ All resources are managed by Terraform (local state). Provider versions are pinn
 | `s3-cors.tf` | CORS configuration |
 | `s3-object-upload.tf` | All website assets (HTML, CSS, JS, images, fonts, sitemap, robots.txt) |
 | `acm.tf` | ACM wildcard certificate, DNS validation records, certificate validation |
-| `cloudfront.tf` | CloudFront distribution |
-| `route53.tf` | Hosted zone, A alias record → CloudFront |
+| `cloudfront.tf` | Portfolio CloudFront distribution + CloudFront Function + redirect distribution for `resume.` |
+| `route53.tf` | Hosted zone, A alias records → both CloudFront distributions |
 | `dynamodb.tf` | Visitor counter table (`PAY_PER_REQUEST`) |
 | `lambda.tf` | Visitor counter Lambda, IAM role, CloudWatch log group |
-| `apigateway.tf` | HTTP API Gateway, stage, integration, route, Lambda permission, `local_file` for config.js |
+| `apigateway.tf` | HTTP API Gateway, stage, throttling, integrations, routes, Lambda permissions, `local_file` for config.js |
 | `medium-fetcher.tf` | Medium fetcher Lambda, IAM role, EventBridge rule + target, Lambda permission |
+| `github-fetcher.tf` | GitHub fetcher Lambda, IAM role, Secrets Manager secret, EventBridge rule + target |
+| `contact-form.tf` | Contact handler Lambda, SES domain + DKIM + MAIL FROM, IAM role, API Gateway integration |
+| `github-actions.tf` | OIDC provider, GitHub Actions IAM role + policy |
 | `outputs.tf` | Website URL, CloudFront domain/ID, bucket name, Route53 zone/NS, visitor counter API URL |
+| `.checkov.yaml` | Checkov security scan — skip-list for rules not applicable to a personal static site |
 
 ### S3 Bucket Configuration
 
@@ -128,7 +138,9 @@ All resources are managed by Terraform (local state). Provider versions are pinn
 | Website hosting | `index.html` / `images/404.jpg` |
 | Bucket policy | `s3:GetObject` allow for `Principal: *` |
 
-### CloudFront Distribution
+### CloudFront Distributions
+
+**Portfolio distribution** (`portfolio.sharmaabhineet.com`):
 
 | Setting | Value |
 |---|---|
@@ -138,7 +150,16 @@ All resources are managed by Terraform (local state). Provider versions are pinn
 | Cache policy | AWS managed `CachingOptimized` |
 | IPv6 | Enabled |
 | Price class | `PriceClass_All` |
+| Aliases | `portfolio.sharmaabhineet.com` |
+
+**Redirect distribution** (`resume.sharmaabhineet.com`):
+
+| Setting | Value |
+|---|---|
 | Aliases | `resume.sharmaabhineet.com` |
+| CloudFront Function | `resume-to-portfolio-redirect` (viewer-request) |
+| Behaviour | Returns HTTP 301 → `https://portfolio.sharmaabhineet.com` + original URI |
+| Certificate | Same ACM wildcard `*.sharmaabhineet.com` |
 
 ### ACM Certificate
 
@@ -169,7 +190,7 @@ Least-privilege inline policy defined in `iam-permission-set-policy.json`.
 | `S3BucketManagement` | Bucket-level S3 operations | `arn:aws:s3:::*` |
 | `S3ObjectManagement` | Object-level S3 operations | `arn:aws:s3:::*/*` |
 | `Route53Management` | Hosted zones, record sets | `*` |
-| `CloudFrontManagement` | Distributions, OAC, invalidations | `*` |
+| `CloudFrontManagement` | Distributions, OAC, invalidations, CloudFront Functions | `*` |
 | `ACMManagement` | Certificates | `*` |
 | `DynamoDBManagement` | Table lifecycle operations | `*` |
 | `LambdaManagement` | Function lifecycle + invoke | `*` |
@@ -178,6 +199,9 @@ Least-privilege inline policy defined in `iam-permission-set-policy.json`.
 | `IAMPassRoleLambdaOnly` | `iam:PassRole` to Lambda only | `arn:aws:iam::*:role/resume-*` + `iam:PassedToService: lambda.amazonaws.com` |
 | `CloudWatchLogsManagement` | Log groups, retention | `*` |
 | `EventBridgeManagement` | Rules and targets | `*` |
+| `IAMOIDCManagement` | OIDC provider lifecycle (GitHub Actions) | `*` |
+| `SecretsManagerManagement` | Secret lifecycle | `arn:aws:secretsmanager:*:*:secret:resume/*` |
+| `SESManagement` | Domain identity, DKIM, send email | `*` |
 
 > `iam:PassRole` is scoped to `resume-*` prefixed roles and restricted to the Lambda service via condition — mitigates privilege escalation risk.
 
@@ -198,7 +222,7 @@ Page load → fetch(COUNTER_API_URL) → API Gateway → Lambda → DynamoDB (AD
 | Lambda | `resume-visitor-counter` (Python 3.12) |
 | DynamoDB table | `resume-visitor-counter` |
 | API Gateway | HTTP API, `GET /count` |
-| CORS | Allowed origin: `https://resume.sharmaabhineet.com` |
+| CORS | Allowed origin: `https://portfolio.sharmaabhineet.com` |
 | Log group | `/aws/lambda/resume-visitor-counter` (14-day retention) |
 
 ### How it works
@@ -270,7 +294,97 @@ EventBridge (weekly) → Lambda → Medium RSS feed → strip HTML → Bedrock (
 
 ---
 
-## 7. Website Design
+## 7. GitHub Repo Fetcher
+
+### Flow
+
+```
+EventBridge (weekly) → Lambda → GitHub GraphQL API (pinned repos) → fallback: REST (recent repos)
+                                                                              ↓
+                                                           Bedrock (Claude Haiku activity summary)
+                                                                              ↓
+                                                                repos.json written to S3
+                                                                              ↓
+                                                     Page fetches /repos.json → renders GitHub section
+```
+
+### Components
+
+| Component | Name / Value |
+|---|---|
+| Lambda | `resume-github-fetcher` (Python 3.12, 60s timeout) |
+| Schedule | Every Monday at 09:30 UTC (`cron(30 9 ? * MON *)`) |
+| GitHub user | `sharmaabhineet` |
+| Max repos | `6` (configurable via `MAX_REPOS` env var) |
+| Repo source | Pinned repos (GraphQL) → fallback to recently pushed (REST) |
+| PAT storage | AWS Secrets Manager — `resume/github-pat` |
+| Bedrock model | `anthropic.claude-3-haiku-20240307-v1:0` |
+| Output | `repos.json` in S3 website bucket |
+| Log group | `/aws/lambda/resume-github-fetcher` (14-day retention) |
+
+### repos.json schema
+
+```json
+{
+  "generated_at": "2026-03-10T14:00:00Z",
+  "source": "pinned",
+  "repos": [
+    {
+      "name":        "resume-cloud-challenge",
+      "description": "Cloud resume portfolio on AWS",
+      "url":         "https://github.com/sharmaabhineet/resume-cloud-challenge",
+      "private":     false,
+      "language":    "HCL",
+      "stars":       0,
+      "forks":       0,
+      "topics":      ["aws", "terraform", "serverless"],
+      "updated_at":  "2026-03-10T00:00:00Z"
+    }
+  ],
+  "activity": {
+    "commits_30d":     12,
+    "repos_active":    1,
+    "active_repo_list": ["sharmaabhineet/resume-cloud-challenge"]
+  },
+  "ai_summary": "Active across cloud infrastructure and backend projects with recent commits in Terraform and Python."
+}
+```
+
+### GitHub PAT
+
+The Lambda uses a Personal Access Token stored in Secrets Manager. The PAT requires `repo` + `read:user` scopes and expires every 90 days. See [Rotate GitHub PAT](#rotate-github-pat-every-90-days) in the runbook.
+
+---
+
+## 8. Contact Form
+
+### Flow
+
+```
+User submits form → POST /contact → API Gateway → Lambda → SES → email delivered to TO_EMAIL
+```
+
+### Components
+
+| Component | Name / Value |
+|---|---|
+| Lambda | `resume-contact-handler` (Python 3.12, 15s timeout) |
+| API route | `POST /contact` on the same HTTP API as visitor counter |
+| From address | `noreply@sharmaabhineet.com` (SES verified domain) |
+| To address | Configured via `var.to_email` (stored in `terraform.tfvars`, gitignored) |
+| CORS | Allowed origin: `https://portfolio.sharmaabhineet.com` |
+| Spam protection | Honeypot field + API Gateway throttling (10 req/s, burst 5) |
+| Log group | `/aws/lambda/resume-contact-handler` (14-day retention) |
+
+### SES Setup
+
+- Domain identity: `sharmaabhineet.com` (verified via DKIM CNAME records in Route53)
+- MAIL FROM domain: `mail.sharmaabhineet.com` (MX + SPF records in Route53)
+- Outbound only — SES sandbox restrictions apply unless production access is requested
+
+---
+
+## 9. Website Design
 
 ### Stack
 
@@ -301,9 +415,11 @@ EventBridge (weekly) → Lambda → Medium RSS feed → strip HTML → Bedrock (
 | **Skills** | Expert / Strong / Working Knowledge / Practices / Infrastructure chip groups |
 | **Experience** | Horizontal career timeline (2008 → present) + detailed timeline cards |
 | **Writing** | Medium post cards (title, date, reading time, tags, AI summary) |
+| **GitHub** | Pinned repo cards (language, stars, forks, topics) + AI activity summary banner |
 | **Education** | MS (Iowa State, GPA 3.82) + BS (Thapar, 7.96/10), projects, thesis card |
 | **Research** | ISU Agronomy Department Raspberry Pi project |
 | **Certifications** | Two Sun Java certifications |
+| **Contact** | Contact form (name, email, message) with honeypot spam protection |
 | **Footer** | Social links, "Designed by Claude · Built on AWS" |
 
 ### Dynamic JS
@@ -313,10 +429,12 @@ EventBridge (weekly) → Lambda → Medium RSS feed → strip HTML → Bedrock (
 - `durationStr()` — current role tenure in "X yrs Y mos" format
 - Visitor counter fetch with stat badge display
 - Medium posts fetch with graceful fallback
+- GitHub repos fetch with repo cards and AI activity summary banner
+- Contact form submission via `POST /contact` with honeypot field validation
 
 ---
 
-## 8. SEO & Analytics
+## 10. SEO & Analytics
 
 ### SEO (`index.html` head)
 
@@ -324,7 +442,7 @@ EventBridge (weekly) → Lambda → Medium RSS feed → strip HTML → Bedrock (
 |---|---|
 | `<title>` | `Abhineet Sharma — Staff Engineer` |
 | `<meta description>` | Professional summary |
-| `<link rel="canonical">` | `https://resume.sharmaabhineet.com/` |
+| `<link rel="canonical">` | `https://portfolio.sharmaabhineet.com/` |
 | Open Graph | `og:type=profile`, title, description, image |
 | Twitter Card | `summary` card with title, description, image |
 | JSON-LD | `Person` schema — name, jobTitle, worksFor, alumniOf, sameAs, knowsAbout |
@@ -341,37 +459,44 @@ EventBridge (weekly) → Lambda → Medium RSS feed → strip HTML → Bedrock (
 
 ### Google Search Console
 
-- Add property: `https://resume.sharmaabhineet.com`
+- Add property: `https://portfolio.sharmaabhineet.com`
 - Submit `sitemap.xml`
 - Request indexing via URL Inspection tool
 
 ---
 
-## 9. Cost
+## 11. Cost
 
 | Resource | Baseline/month | Usage-based |
 |---|---|---|
 | Route53 hosted zone | **$0.50** | + $0.40/1M DNS queries |
-| CloudFront | $0 | $0.085/GB transfer, $0.01/10k HTTPS requests |
+| CloudFront (portfolio) | $0 | $0.085/GB transfer, $0.01/10k HTTPS requests |
+| CloudFront (redirect) | $0 | Minimal (redirects only) |
 | S3 | $0 | $0.023/GB storage |
 | API Gateway | $0 | $1.00/1M requests |
 | Lambda (visitor counter) | $0 | Free tier: 1M requests/month |
 | DynamoDB | $0 | Free tier: 200M requests/month |
 | Lambda (medium fetcher) | $0 | Negligible (weekly runs) |
+| Lambda (github fetcher) | $0 | Negligible (weekly runs) |
+| Lambda (contact handler) | $0 | Negligible (on-demand) |
 | Bedrock (Claude Haiku) | $0 | ~$0.12/year at weekly cadence |
+| Secrets Manager (GitHub PAT) | **$0.40** | Per secret/month |
 | CloudWatch Logs | $0 | $0.50/GB ingested |
-| **Total baseline** | **$0.50/month** | |
+| **Total baseline** | **$0.90/month** | |
 
 ---
 
-## 10. Operations Runbook
+## 12. Operations Runbook
 
 ### Deploy changes
 
+CI/CD is handled automatically by GitHub Actions on every push to `master`. For manual deploys:
+
 ```bash
 terraform apply -auto-approve
+DIST_ID=$(terraform output -raw cloudfront_id)
 aws cloudfront create-invalidation \
-  --distribution-id E253DNUVI33C1O \
+  --distribution-id "$DIST_ID" \
   --paths "/*" \
   --profile resume-deployer
 ```
@@ -380,6 +505,20 @@ aws cloudfront create-invalidation \
 
 ```bash
 ./fetch-posts.sh
+```
+
+### Fetch GitHub repos manually
+
+```bash
+./fetch-repos.sh
+```
+
+### Test contact form
+
+```bash
+curl -X POST https://api.sharmaabhineet.com/contact \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test","email":"test@example.com","message":"Hello"}'
 ```
 
 ### Local development
@@ -408,8 +547,9 @@ aws sso login --profile resume-deployer
 ### Invalidate CloudFront cache
 
 ```bash
+DIST_ID=$(terraform output -raw cloudfront_id)
 aws cloudfront create-invalidation \
-  --distribution-id E253DNUVI33C1O \
+  --distribution-id "$DIST_ID" \
   --paths "/*" \
   --profile resume-deployer
 ```
@@ -446,7 +586,7 @@ The GitHub Personal Access Token used by the `resume-github-fetcher` Lambda expi
 
 ---
 
-## 11. Repository Structure
+## 13. Repository Structure
 
 ```
 resume-cloud-challenge/
@@ -455,7 +595,13 @@ resume-cloud-challenge/
 │
 ├── lambda/
 │   ├── visitor_counter.py        # Visitor counter Lambda (Python 3.12)
-│   └── medium_fetcher.py         # Medium RSS + Bedrock summarizer (Python 3.12)
+│   ├── medium_fetcher.py         # Medium RSS + Bedrock summarizer (Python 3.12)
+│   ├── github_fetcher.py         # GitHub GraphQL + Bedrock summarizer (Python 3.12)
+│   └── contact_handler.py        # Contact form handler + SES (Python 3.12)
+│
+├── .github/
+│   └── workflows/
+│       └── deploy.yml            # GitHub Actions CI/CD (OIDC, Terraform, invalidation)
 │
 ├── css/
 │   ├── main.css                  # Custom design system
@@ -476,13 +622,13 @@ resume-cloud-challenge/
 ├── files/
 │   └── abhineet-resume.pdf
 │
-├── index.html                    # Resume website
+├── index.html                    # Portfolio website
 ├── sitemap.xml                   # SEO sitemap
 ├── robots.txt                    # Crawler permissions
 ├── favicon.ico
 │
 ├── providers.tf                  # Terraform providers (aws, archive, local)
-├── variables.tf                  # Input variables
+├── variables.tf                  # Input variables (domain_name, bucket_name, region, subdomain, to_email)
 ├── terraform.tfvars              # Values (gitignored)
 ├── terraform.tfvars.example      # Template for tfvars
 ├── outputs.tf                    # Output values
@@ -495,18 +641,24 @@ resume-cloud-challenge/
 ├── s3-object-upload.tf           # All asset uploads
 │
 ├── acm.tf                        # ACM certificate + DNS validation
-├── cloudfront.tf                 # CloudFront distribution
-├── route53.tf                    # Hosted zone + A record
+├── cloudfront.tf                 # Portfolio + redirect CloudFront distributions, CloudFront Function
+├── route53.tf                    # Hosted zone + A records (portfolio + resume redirect)
 │
 ├── dynamodb.tf                   # Visitor counter table
 ├── lambda.tf                     # Visitor counter Lambda + IAM
 ├── apigateway.tf                 # HTTP API Gateway + local_file config
 │
 ├── medium-fetcher.tf             # Medium fetcher Lambda + IAM + EventBridge
-├── fetch-posts.sh                # Manual Lambda invocation script
+├── github-fetcher.tf             # GitHub fetcher Lambda + IAM + Secrets Manager + EventBridge
+├── contact-form.tf               # Contact handler Lambda + SES + IAM + API Gateway integration
+├── github-actions.tf             # OIDC provider + GitHub Actions IAM role + policy
+│
+├── fetch-posts.sh                # Manual medium-fetcher Lambda invocation script
+├── fetch-repos.sh                # Manual github-fetcher Lambda invocation script
 ├── mock-counter-server.py        # Local dev mock API (gitignored)
 │
 ├── iam-permission-set-policy.json  # ResumeDeployer least-privilege policy
+├── .checkov.yaml                   # Checkov security scan skip-list with justifications
 │
 ├── .gitignore
 └── .terraform.lock.hcl

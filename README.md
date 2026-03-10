@@ -1,3 +1,3 @@
 # Cloud Resume Challenge
 
-Following cloud resume challenge, this is my resume website hosted on AWS under the domain www.sharmaabhineet.com. Used infrastructure as a code approach to host this website.
+Following the Cloud Resume Challenge, this is my portfolio website hosted on AWS at [portfolio.sharmaabhineet.com](https://portfolio.sharmaabhineet.com). Built with a fully infrastructure-as-code approach using Terraform on AWS.
