@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://resume.sharmaabhineet.com/sitemap.xml
+Sitemap: https://portfolio.sharmaabhineet.com/sitemap.xml
