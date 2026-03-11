@@ -19,6 +19,14 @@ resource "aws_route53_record" "website" {
   }
 }
 
+resource "aws_route53_record" "google_site_verification" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = var.domain_name
+  type    = "TXT"
+  ttl     = 300
+  records = ["google-site-verification=aJ0nkqUollBv9IuFXoOL00i5TfSNM1TMwAkZIeRAkGU"]
+}
+
 resource "aws_route53_record" "resume_redirect" {
   zone_id = aws_route53_zone.main.zone_id
   name    = "resume.${var.domain_name}"
