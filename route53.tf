@@ -19,6 +19,18 @@ resource "aws_route53_record" "website" {
   }
 }
 
+resource "aws_route53_record" "apex_redirect" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = var.domain_name
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.apex_redirect.domain_name
+    zone_id                = aws_cloudfront_distribution.apex_redirect.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
 resource "aws_route53_record" "google_site_verification" {
   zone_id = aws_route53_zone.main.zone_id
   name    = var.domain_name
