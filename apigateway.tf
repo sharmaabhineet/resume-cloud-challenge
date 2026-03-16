@@ -3,7 +3,7 @@ resource "aws_apigatewayv2_api" "visitor_counter" {
   protocol_type = "HTTP"
 
   cors_configuration {
-    allow_origins = ["https://${var.subdomain}.${var.domain_name}"]
+    allow_origins = ["*"]
     allow_methods = ["GET", "POST", "OPTIONS"]
     allow_headers = ["Content-Type"]
     max_age       = 300

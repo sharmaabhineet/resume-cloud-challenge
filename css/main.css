@@ -821,6 +821,13 @@ footer {
 
 [data-theme="dark"] .form-label { color: var(--text); }
 
+[data-theme="dark"] footer {
+  background: #0a0f1e;
+}
+[data-theme="dark"] .footer-name { color: #fff; }
+[data-theme="dark"] .footer-social a { color: rgba(255,255,255,.65); }
+[data-theme="dark"] .footer-copy { color: rgba(255,255,255,.35); }
+
 /* ------ GitHub Repos ------ */
 .github-summary-card {
   background: var(--white);

@@ -17,7 +17,7 @@ resource "aws_s3_object" "css_map" {
 }
 
 resource "aws_s3_object" "js" {
-  for_each     = fileset("scripts/", "**/*.js")
+  for_each     = { for f in fileset("scripts/", "**/*.js") : f => f if f != "config.js" }
   bucket       = aws_s3_bucket.website.bucket
   key          = "scripts/${each.value}"
   source       = "scripts/${each.value}"
