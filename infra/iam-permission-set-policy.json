@@ -149,7 +149,40 @@
         "lambda:TagResource",
         "lambda:UntagResource",
         "lambda:ListTags",
-        "lambda:GetFunctionCodeSigningConfig"
+        "lambda:GetFunctionCodeSigningConfig",
+        "lambda:PutFunctionConcurrency",
+        "lambda:DeleteFunctionConcurrency",
+        "lambda:GetFunctionConcurrency"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "SNSManagement",
+      "Effect": "Allow",
+      "Action": [
+        "sns:CreateTopic",
+        "sns:DeleteTopic",
+        "sns:GetTopicAttributes",
+        "sns:SetTopicAttributes",
+        "sns:ListTopics",
+        "sns:Subscribe",
+        "sns:Unsubscribe",
+        "sns:GetSubscriptionAttributes",
+        "sns:ListSubscriptionsByTopic",
+        "sns:TagResource",
+        "sns:UntagResource",
+        "sns:ListTagsForResource"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "BudgetsManagement",
+      "Effect": "Allow",
+      "Action": [
+        "budgets:CreateBudget",
+        "budgets:ModifyBudget",
+        "budgets:DeleteBudget",
+        "budgets:ViewBudget"
       ],
       "Resource": "*"
     },

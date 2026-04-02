@@ -95,11 +95,11 @@ resource "aws_lambda_function" "github_fetcher" {
 
   environment {
     variables = {
-      S3_BUCKET            = aws_s3_bucket.website.bucket
+      S3_BUCKET             = aws_s3_bucket.website.bucket
       GITHUB_PAT_SECRET_ARN = aws_secretsmanager_secret.github_pat.arn
-      GITHUB_USER          = "sharmaabhineet"
-      MAX_REPOS            = "6"
-      BEDROCK_MODEL        = "anthropic.claude-3-haiku-20240307-v1:0"
+      GITHUB_USER           = "sharmaabhineet"
+      MAX_REPOS             = "6"
+      BEDROCK_MODEL         = "anthropic.claude-3-haiku-20240307-v1:0"
     }
   }
 

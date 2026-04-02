@@ -41,7 +41,7 @@ jobs:
       - name: Checkov security scan
         uses: bridgecrewio/checkov-action@v12
         with:
-          directory: .
+          directory: infra
           framework: terraform
           config_file: .checkov.yaml
           soft_fail: true          # warn but don't block deploy
@@ -49,12 +49,15 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+        working-directory: infra
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
+        working-directory: infra
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
+        working-directory: infra
 
       - name: Invalidate CloudFront cache
         run: |
@@ -62,3 +65,4 @@ jobs:
           aws cloudfront create-invalidation \
             --distribution-id "$DISTRIBUTION_ID" \
             --paths "/*"
+        working-directory: infra

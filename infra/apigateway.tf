@@ -3,7 +3,7 @@ resource "aws_apigatewayv2_api" "visitor_counter" {
   protocol_type = "HTTP"
 
   cors_configuration {
-    allow_origins = ["*"]
+    allow_origins = ["https://${var.subdomain}.${var.domain_name}"]
     allow_methods = ["GET", "POST", "OPTIONS"]
     allow_headers = ["Content-Type"]
     max_age       = 300
@@ -16,8 +16,8 @@ resource "aws_apigatewayv2_stage" "visitor_counter" {
   auto_deploy = true
 
   default_route_settings {
-    throttling_rate_limit  = 10   # max sustained requests/sec across all routes
-    throttling_burst_limit = 5    # max concurrent burst
+    throttling_rate_limit  = 10 # max sustained requests/sec across all routes
+    throttling_burst_limit = 5  # max concurrent burst
   }
 }
 
@@ -48,7 +48,7 @@ resource "local_file" "api_config" {
     window.COUNTER_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/count';
     window.CONTACT_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/contact';
   JS
-  filename = "${path.module}/scripts/config.js"
+  filename = "${path.module}/../scripts/config.js"
 }
 
 # Upload config.js directly to S3 — explicit resource so CI/CD doesn't need the file on disk
