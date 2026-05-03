@@ -1,17 +1,25 @@
 """
 Portfolio Chat Agent Lambda
 
+Routes:
+  GET  /chat-token  — issue a short-lived HMAC session token (master secret never leaves server)
+  POST /chat        — validate token + run chat turn
+
 Protections:
-- X-Chat-Key header validation (Secrets Manager)
-- Per-IP rate limit: 10 req/hour (DynamoDB + TTL)
+- HMAC session tokens (10-min windows, unique nonce per session, master secret in Secrets Manager only)
+- Per-IP rate limit: 10 req/hour on /chat; 3 req/hour on /chat-token (DynamoDB + TTL)
 - Daily token cap:   ~33,333 tokens  (~1M / 30)
 - Monthly token cap: 1,000,000 tokens
 - SNS alert on first cap breach (daily + monthly)
 - SES transcript email after every turn (IP, message, reply, tokens)
+- Prompt injection + garbage input filters
 """
+import hashlib
+import hmac as hmac_lib
 import json
 import os
 import re
+import secrets as secrets_lib
 import time
 import boto3
 from datetime import datetime, timezone
@@ -25,11 +33,13 @@ TO_EMAIL        = os.environ["TO_EMAIL"]
 ALLOWED_ORIGIN  = os.environ["ALLOWED_ORIGIN"]
 S3_BUCKET       = os.environ["S3_BUCKET"]
 
-DAILY_TOKEN_CAP      = 33_333
-MONTHLY_TOKEN_CAP    = 1_000_000
-RATE_LIMIT_PER_HOUR  = 10
-MAX_USER_MSG_LEN     = 500
-MAX_HISTORY_TURNS    = 8   # last 8 turns = 16 messages
+DAILY_TOKEN_CAP           = 33_333
+MONTHLY_TOKEN_CAP         = 1_000_000
+RATE_LIMIT_PER_HOUR       = 10   # chat requests per IP
+RATE_LIMIT_TOKEN_PER_HOUR = 3    # token requests per IP (few page loads per hour is fine)
+TOKEN_WINDOW              = 600  # seconds — token valid for current + previous window
+MAX_USER_MSG_LEN          = 500
+MAX_HISTORY_TURNS         = 8    # last 8 turns = 16 messages
 
 ddb     = boto3.client("dynamodb")
 sm      = boto3.client("secretsmanager")
@@ -38,7 +48,7 @@ sns     = boto3.client("sns")
 ses     = boto3.client("ses", region_name="us-east-1")
 
 # Cached across warm invocations
-_cached_api_key        = None
+_cached_master_secret  = None   # HMAC signing key — never leaves the server
 _cached_posts_section  = None   # Medium posts injected into system prompt
 _cached_github_section = None   # GitHub repos/activity injected into system prompt
 
@@ -128,14 +138,43 @@ def build_system_prompt():
     )
 
 
-def get_api_key():
-    global _cached_api_key
-    if _cached_api_key:
-        return _cached_api_key
+def get_master_secret():
+    global _cached_master_secret
+    if _cached_master_secret:
+        return _cached_master_secret
     resp = sm.get_secret_value(SecretId=API_KEY_SECRET)
-    secret = json.loads(resp["SecretString"])
-    _cached_api_key = secret["key"]
-    return _cached_api_key
+    _cached_master_secret = json.loads(resp["SecretString"])["key"]
+    return _cached_master_secret
+
+
+# ---- HMAC session token helpers ----
+
+def _current_window():
+    return int(time.time()) // TOKEN_WINDOW
+
+
+def generate_token(master_secret):
+    """Create a unique signed token for the current window."""
+    nonce  = secrets_lib.token_hex(16)
+    window = _current_window()
+    msg    = f"{window}:{nonce}"
+    sig    = hmac_lib.new(master_secret.encode(), msg.encode(), hashlib.sha256).hexdigest()[:32]
+    return f"{window}:{nonce}:{sig}"
+
+
+def validate_token(token, master_secret):
+    """Accept tokens from the current or previous window (handles boundary crossings)."""
+    try:
+        window_str, nonce, given_sig = token.split(":")
+        token_window  = int(window_str)
+        current       = _current_window()
+        if token_window not in (current, current - 1):
+            return False
+        msg          = f"{token_window}:{nonce}"
+        expected_sig = hmac_lib.new(master_secret.encode(), msg.encode(), hashlib.sha256).hexdigest()[:32]
+        return hmac_lib.compare_digest(given_sig, expected_sig)
+    except Exception:
+        return False
 
 
 def get_medium_section():
@@ -348,7 +387,7 @@ def cors_headers():
     return {
         "Access-Control-Allow-Origin":  ALLOWED_ORIGIN,
         "Access-Control-Allow-Headers": "Content-Type,X-Chat-Key",
-        "Access-Control-Allow-Methods": "POST,OPTIONS",
+        "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
     }
 
 
@@ -360,14 +399,30 @@ def respond(status, body):
     }
 
 
-def handler(event, context):
-    if event.get("requestContext", {}).get("http", {}).get("method") == "OPTIONS":
-        return {"statusCode": 204, "headers": cors_headers(), "body": ""}
+def handle_token_request(event):
+    """GET /chat-token — issue a short-lived HMAC session token."""
+    ip   = event.get("requestContext", {}).get("http", {}).get("sourceIp", "unknown")
+    keys = now_keys()
 
+    # Rate limit token requests per IP
+    rate_pk = f"TOKENRATE#{ip}#{keys['hour']}"
+    if get_count(rate_pk, "req_count") >= RATE_LIMIT_TOKEN_PER_HOUR:
+        return respond(429, {"error": "Too many requests. Please try again later."})
+
+    token  = generate_token(get_master_secret())
+    increment_counter(rate_pk, "req_count", 1, ttl_seconds=3600)
+
+    # Tell the client when to refresh (remaining time in current window + one full window buffer)
+    seconds_remaining = TOKEN_WINDOW - (int(time.time()) % TOKEN_WINDOW)
+    return respond(200, {"token": token, "expires_in": seconds_remaining + TOKEN_WINDOW})
+
+
+def handle_chat_request(event):
+    """POST /chat — validate session token and run a chat turn."""
     headers = {k.lower(): v for k, v in (event.get("headers") or {}).items()}
 
-    # 1. API key validation
-    if headers.get("x-chat-key", "") != get_api_key():
+    # 1. Token validation
+    if not validate_token(headers.get("x-chat-key", ""), get_master_secret()):
         return respond(401, {"error": "Unauthorized"})
 
     # 2. Parse body
@@ -455,3 +510,20 @@ def handler(event, context):
     send_transcript(ip, user_message, assistant_text, total_tokens, keys)
 
     return respond(200, {"reply": assistant_text, "tokens_used": total_tokens})
+
+
+def handler(event, context):
+    http   = event.get("requestContext", {}).get("http", {})
+    method = http.get("method", "")
+    path   = http.get("path", "")
+
+    if method == "OPTIONS":
+        return {"statusCode": 204, "headers": cors_headers(), "body": ""}
+
+    if method == "GET" and path.endswith("/chat-token"):
+        return handle_token_request(event)
+
+    if method == "POST" and path.endswith("/chat"):
+        return handle_chat_request(event)
+
+    return respond(404, {"error": "Not found"})

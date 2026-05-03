@@ -45,10 +45,10 @@ resource "aws_lambda_permission" "visitor_counter" {
 # Write API URLs to local file (used by mock dev server)
 locals {
   config_js = <<-JS
-    window.COUNTER_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/count';
-    window.CONTACT_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/contact';
-    window.CHAT_API_URL    = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/chat';
-    window.CHAT_API_KEY    = '${random_password.chat_api_key.result}';
+    window.COUNTER_API_URL  = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/count';
+    window.CONTACT_API_URL  = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/contact';
+    window.CHAT_API_URL     = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/chat';
+    window.CHAT_TOKEN_URL   = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/chat-token';
   JS
 }
 
