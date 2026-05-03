@@ -14,7 +14,7 @@ import boto3
 
 S3_BUCKET       = os.environ["S3_BUCKET"]
 MEDIUM_FEED_URL = os.environ["MEDIUM_FEED_URL"]
-MAX_POSTS       = int(os.environ.get("MAX_POSTS", "5"))
+MAX_POSTS       = int(os.environ.get("MAX_POSTS", "6"))
 BEDROCK_MODEL   = os.environ.get("BEDROCK_MODEL", "anthropic.claude-3-haiku-20240307-v1:0")
 AWS_REGION      = os.environ.get("AWS_REGION", "us-east-1")
 
@@ -71,9 +71,22 @@ def summarize(title, text):
 def parse_feed(xml_bytes):
     root    = ET.fromstring(xml_bytes)
     channel = root.find("channel")
+    items   = channel.findall("item") if channel is not None else []
     posts   = []
+    tag_counts = {}
 
-    for item in channel.findall("item")[:MAX_POSTS]:
+    for item in items:
+        for category in item.findall("category"):
+            tag = category.text
+            if tag:
+                tag_counts[tag] = tag_counts.get(tag, 0) + 1
+
+    top_tags = [
+        {"tag": tag, "count": count}
+        for tag, count in sorted(tag_counts.items(), key=lambda entry: (-entry[1], entry[0]))[:5]
+    ]
+
+    for item in items[:MAX_POSTS]:
         title   = (item.findtext("title") or "").strip()
         link    = (item.findtext("link")  or "").strip()
         pub_raw = (item.findtext("pubDate") or "").strip()
@@ -108,7 +121,11 @@ def parse_feed(xml_bytes):
             "summary":      summary,
         })
 
-    return posts
+    return {
+        "posts":       posts,
+        "total_posts": len(items),
+        "top_tags":    top_tags,
+    }
 
 
 def handler(event, context):
@@ -119,11 +136,13 @@ def handler(event, context):
     with urllib.request.urlopen(req, timeout=15) as resp:
         xml_bytes = resp.read()
 
-    posts = parse_feed(xml_bytes)
+    feed = parse_feed(xml_bytes)
 
     payload = {
-        "updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "posts":   posts,
+        "updated":     datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "posts":       feed["posts"],
+        "total_posts": feed["total_posts"],
+        "top_tags":    feed["top_tags"],
     }
 
     s3 = boto3.client("s3")
@@ -135,5 +154,5 @@ def handler(event, context):
         CacheControl="no-cache, no-store, must-revalidate",
     )
 
-    print(f"Wrote {len(posts)} posts to s3://{S3_BUCKET}/posts.json")
-    return {"statusCode": 200, "posts_written": len(posts)}
+    print(f"Wrote {len(feed['posts'])} posts to s3://{S3_BUCKET}/posts.json")
+    return {"statusCode": 200, "posts_written": len(feed["posts"])}

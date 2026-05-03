@@ -74,7 +74,7 @@ resource "aws_lambda_function" "medium_fetcher" {
     variables = {
       S3_BUCKET       = aws_s3_bucket.website.bucket
       MEDIUM_FEED_URL = "https://medium.com/feed/@sharmaabhineet"
-      MAX_POSTS       = "5"
+      MAX_POSTS       = "6"
       BEDROCK_MODEL   = "anthropic.claude-3-haiku-20240307-v1:0"
     }
   }

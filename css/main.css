@@ -1,6 +1,6 @@
 /* ============================================================
    Abhineet Sharma — Resume
-   Designed by Claude
+   Built on AWS
    ============================================================ */
 
 /* ------ Design Tokens ------ */
@@ -221,11 +221,33 @@ body {
   border-radius: 2px;
 }
 
+.section-intro {
+  max-width: 720px;
+  color: var(--text-muted);
+  font-size: .95rem;
+  line-height: 1.75;
+  margin: -1rem 0 1.75rem;
+}
+
 /* ------ About ------ */
 .about-text {
   font-size: .975rem;
   color: var(--text);
   line-height: 1.85;
+  margin: 0;
+}
+
+.mantra-card {
+  border-left: 3px solid var(--accent);
+  margin: 1.35rem 0 0;
+  padding: .15rem 0 .15rem 1rem;
+}
+
+.mantra-card blockquote {
+  color: var(--primary);
+  font-family: 'Poppins', sans-serif;
+  font-size: .98rem;
+  line-height: 1.6;
   margin: 0;
 }
 
@@ -249,6 +271,33 @@ body {
   margin-top: .3rem;
   text-transform: uppercase;
   letter-spacing: .06em;
+}
+
+/* ------ Brand / Principles ------ */
+.brand-section { background: var(--bg); }
+
+.principle-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  min-height: 100%;
+  box-shadow: var(--shadow);
+}
+
+.principle-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin: 0 0 .45rem;
+}
+
+.principle-text {
+  color: var(--text-muted);
+  font-size: .84rem;
+  line-height: 1.65;
+  margin: 0;
 }
 
 /* ------ Skills ------ */
@@ -286,6 +335,24 @@ body {
 }
 
 /* ------ Timeline ------ */
+.experience-summary {
+  max-width: 900px;
+  margin: -1rem 0 2rem;
+}
+
+.experience-summary p {
+  color: var(--text-muted);
+  font-size: .95rem;
+  line-height: 1.75;
+  margin: 0 0 .9rem;
+}
+
+.experience-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+}
+
 .timeline {
   position: relative;
   padding-left: 2.25rem;
@@ -340,6 +407,22 @@ body {
   color: var(--accent);
   margin-bottom: .3rem;
 }
+.domain-pill {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: .4rem;
+  padding: .08rem .48rem;
+  border-radius: 50px;
+  border: 1px solid rgba(99,102,241,.18);
+  background: var(--accent-pale);
+  color: var(--accent);
+  font-size: .66rem;
+  font-family: 'Roboto', system-ui, sans-serif;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
 .tl-date {
   font-size: .78rem;
   color: var(--text-muted);
@@ -391,6 +474,42 @@ body {
   background: var(--accent);
 }
 
+/* ------ Selected Work ------ */
+.work-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.35rem;
+  height: 100%;
+  box-shadow: var(--shadow);
+  transition: box-shadow .2s, transform .2s;
+}
+.work-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+.work-kicker {
+  color: var(--accent);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin: 0 0 .55rem;
+}
+
+.work-title {
+  font-family: 'Poppins', sans-serif;
+  color: var(--primary);
+  font-size: .98rem;
+  line-height: 1.45;
+  margin: 0 0 .65rem;
+}
+
+.work-text {
+  color: var(--text-muted);
+  font-size: .86rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
 /* Previous roles */
 .prev-roles-card { background: var(--bg); }
 
@@ -439,28 +558,6 @@ body {
 .edu-school { font-size: .875rem; color: var(--accent); font-weight: 500; margin-bottom: .2rem; }
 .edu-period { font-size: .77rem; color: var(--text-muted); margin-bottom: .75rem; }
 .edu-desc { font-size: .875rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1rem; }
-
-.edu-projects-label {
-  font-size: .68rem;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--text-muted);
-  font-weight: 500;
-  margin-bottom: .5rem;
-}
-.edu-project-link {
-  display: block;
-  font-size: .82rem;
-  color: var(--text);
-  text-decoration: none;
-  padding: .35rem 0;
-  border-bottom: 1px solid var(--border);
-  transition: color .15s;
-  line-height: 1.4;
-}
-.edu-project-link:last-child { border-bottom: none; }
-.edu-project-link:hover { color: var(--accent); }
-.edu-project-link span { color: var(--text-muted); }
 
 /* Thesis */
 .thesis-card {
@@ -530,6 +627,48 @@ footer {
 .footer-copy .credit { color: var(--accent-light); }
 
 /* ------ Writing / Blog Cards ------ */
+.writing-summary {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: .85rem;
+  margin-bottom: 1.25rem;
+}
+
+.writing-summary-item {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .85rem 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.writing-summary-label {
+  display: block;
+  font-size: .68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: .25rem;
+}
+
+.writing-summary-item strong {
+  font-family: 'Poppins', sans-serif;
+  color: var(--accent);
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.writing-summary-tags {
+  flex: 1;
+  min-width: min(100%, 320px);
+}
+
+.tag-count {
+  opacity: .65;
+  margin-left: .15rem;
+}
+
 .post-card {
   background: var(--white);
   border: 1px solid var(--border);
