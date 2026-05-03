@@ -113,6 +113,7 @@ resource "aws_iam_role_policy" "lambda_chat_agent" {
         Effect = "Allow"
         Action = ["bedrock:InvokeModel"]
         Resource = [
+          "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-haiku*",
           "arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku*",
           "arn:aws:bedrock:*:*:inference-profile/us.anthropic.claude-haiku*",
         ]
@@ -164,7 +165,7 @@ resource "aws_lambda_function" "chat_agent" {
       DYNAMODB_TABLE     = aws_dynamodb_table.chat_limits.name
       API_KEY_SECRET_ARN = aws_secretsmanager_secret.chat_api_key.arn
       SNS_TOPIC_ARN      = aws_sns_topic.chat_alerts.arn
-      BEDROCK_MODEL      = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+      BEDROCK_MODEL      = "anthropic.claude-3-haiku-20240307-v1:0"
       FROM_EMAIL         = "noreply@${var.domain_name}"
       TO_EMAIL           = var.to_email
       ALLOWED_ORIGIN     = "https://${var.subdomain}.${var.domain_name}"
