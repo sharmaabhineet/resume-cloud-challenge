@@ -510,6 +510,68 @@ body {
   margin: 0;
 }
 
+/* ------ Private Projects ------ */
+.project-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.15rem;
+  box-shadow: var(--shadow);
+  height: 100%;
+}
+
+.project-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .55rem;
+}
+
+.project-kicker {
+  color: var(--accent);
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.private-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: .12rem .5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,.25);
+  background: rgba(148,163,184,.08);
+  color: var(--text-muted);
+  font-size: .68rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.project-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: .98rem;
+  color: var(--primary);
+  line-height: 1.45;
+  margin: 0 0 .55rem;
+}
+
+.project-text {
+  color: var(--text-muted);
+  font-size: .86rem;
+  line-height: 1.65;
+  margin: 0 0 .7rem;
+}
+
+.project-meta {
+  color: var(--text-muted);
+  font-size: .74rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
 /* Previous roles */
 .prev-roles-card { background: var(--bg); }
 

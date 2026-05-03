@@ -68,7 +68,18 @@ def summarize(title, text):
     return result["content"][0]["text"].strip()
 
 
-def parse_feed(xml_bytes):
+def resolve_max_posts(event):
+    if isinstance(event, dict):
+        override = event.get("max_posts")
+        if override is not None:
+            try:
+                return max(1, int(override))
+            except Exception:
+                print(f"Ignoring invalid max_posts override: {override}")
+    return MAX_POSTS
+
+
+def parse_feed(xml_bytes, max_posts):
     root    = ET.fromstring(xml_bytes)
     channel = root.find("channel")
     items   = channel.findall("item") if channel is not None else []
@@ -86,7 +97,7 @@ def parse_feed(xml_bytes):
         for tag, count in sorted(tag_counts.items(), key=lambda entry: (-entry[1], entry[0]))[:5]
     ]
 
-    for item in items[:MAX_POSTS]:
+    for item in items[:max_posts]:
         title   = (item.findtext("title") or "").strip()
         link    = (item.findtext("link")  or "").strip()
         pub_raw = (item.findtext("pubDate") or "").strip()
@@ -136,7 +147,8 @@ def handler(event, context):
     with urllib.request.urlopen(req, timeout=15) as resp:
         xml_bytes = resp.read()
 
-    feed = parse_feed(xml_bytes)
+    max_posts = resolve_max_posts(event)
+    feed = parse_feed(xml_bytes, max_posts)
 
     payload = {
         "updated":     datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),

@@ -314,8 +314,8 @@
               <span class="chip featured">Microservices</span>
               <span class="chip featured">Python</span>
               <span class="chip featured">GRPC</span>
-              <span class="chip">SQL</span>
-              <span class="chip">Docker</span>
+              <span class="chip featured">SQL</span>
+              <span class="chip featured">Docker</span>
             </div>
           </div>
         </div>
@@ -337,11 +337,11 @@
           <div class="skill-group">
             <p class="skill-group-label">Practices</p>
             <div class="skill-chips">
-              <span class="chip">Distributed Systems</span>
+              <span class="chip featured">Distributed Systems</span>
               <span class="chip">CI/CD</span>
               <span class="chip">TDD</span>
               <span class="chip">Code Review</span>
-              <span class="chip">Agile</span>
+              <span class="chip featured">Agile</span>
             </div>
           </div>
         </div>
@@ -350,7 +350,7 @@
           <div class="skill-group">
             <p class="skill-group-label">Infrastructure</p>
             <div class="skill-chips">
-              <span class="chip">AWS</span>
+              <span class="chip featured">AWS</span>
               <span class="chip">Terraform</span>
               <span class="chip">Linux</span>
               <span class="chip">Redis</span>
@@ -578,9 +578,51 @@
         </div>
         <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="140">
           <div class="work-card">
-            <p class="work-kicker">Cloud Systems</p>
-            <h3 class="work-title">Built event-driven AWS systems with Terraform</h3>
-            <p class="work-text">Designed practical serverless workflows with API Gateway, Lambda, DynamoDB, SNS, and infrastructure as code for reliable delivery.</p>
+            <p class="work-kicker">Outside Work</p>
+            <h3 class="work-title">Exploring event-driven AWS and AI-backed systems</h3>
+            <p class="work-text">Building hands-on systems to understand RAG pipelines, LLM-assisted decisioning, replayable event logs, and practical serverless architecture.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Private Projects ===== -->
+  <section class="section" aria-label="Private projects">
+    <div class="container">
+      <h2 class="section-title">Private Projects</h2>
+      <p class="section-intro">
+        Small, hands-on builds I use to stay close to modern AI workflows and practical backend patterns.
+      </p>
+      <div class="row g-3">
+        <div class="col-md-6" data-aos="fade-up">
+          <div class="project-card">
+            <div class="project-head">
+              <p class="project-kicker">Trading AI Agent</p>
+              <span class="private-badge">Private</span>
+            </div>
+            <h3 class="project-title">Exploring decision loops for market workflows</h3>
+            <p class="project-text">
+              A private prototype focused on event-driven trading logic, LLM-assisted analysis, replayable prompts, and guardrails around deterministic execution.
+            </p>
+            <p class="project-meta">
+              Python &middot; event logs &middot; backtesting &middot; LLM orchestration &middot; prompt evaluation
+            </p>
+          </div>
+        </div>
+        <div class="col-md-6" data-aos="fade-up" data-aos-delay="80">
+          <div class="project-card">
+            <div class="project-head">
+              <p class="project-kicker">Ask My Docs</p>
+              <span class="private-badge">Private</span>
+            </div>
+            <h3 class="project-title">RAG for document search and cited answers</h3>
+            <p class="project-text">
+              A private RAG workspace for testing ingestion, chunking, retrieval quality, and answer citation across document collections.
+            </p>
+            <p class="project-meta">
+              Python &middot; embeddings &middot; vector search &middot; retrieval ranking &middot; citations
+            </p>
           </div>
         </div>
       </div>
@@ -966,6 +1008,13 @@
       .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
       .then(function(data) {
         var grid = document.getElementById('repos-grid');
+        var generatedAt = data.generated_at
+          ? new Date(data.generated_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            })
+          : '';
 
         // AI summary
         if (data.ai_summary) {
@@ -974,7 +1023,9 @@
             ? data.activity.commits_30d + ' commits &middot; ' +
               data.activity.repos_active + ' repos active (last 30 days)'
             : '';
-          document.getElementById('github-activity-stats').innerHTML = stats;
+          document.getElementById('github-activity-stats').innerHTML = generatedAt
+            ? stats + ' &middot; Generated ' + generatedAt
+            : stats;
           document.getElementById('github-summary-wrap').style.display = '';
         }
 
