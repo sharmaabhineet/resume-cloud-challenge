@@ -5,7 +5,7 @@ resource "aws_apigatewayv2_api" "visitor_counter" {
   cors_configuration {
     allow_origins = ["https://${var.subdomain}.${var.domain_name}"]
     allow_methods = ["GET", "POST", "OPTIONS"]
-    allow_headers = ["Content-Type"]
+    allow_headers = ["Content-Type", "X-Chat-Key"]
     max_age       = 300
   }
 }
@@ -43,11 +43,17 @@ resource "aws_lambda_permission" "visitor_counter" {
 }
 
 # Write API URLs to local file (used by mock dev server)
-resource "local_file" "api_config" {
-  content  = <<-JS
-    window.COUNTER_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/count';
-    window.CONTACT_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/contact';
+locals {
+  config_js = <<-JS
+    window.COUNTER_API_URL  = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/count';
+    window.CONTACT_API_URL  = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/contact';
+    window.CHAT_API_URL     = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/chat';
+    window.CHAT_TOKEN_URL   = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/chat-token';
   JS
+}
+
+resource "local_file" "api_config" {
+  content  = local.config_js
   filename = "${path.module}/../scripts/config.js"
 }
 
@@ -55,7 +61,7 @@ resource "local_file" "api_config" {
 resource "aws_s3_object" "api_config" {
   bucket       = aws_s3_bucket.website.bucket
   key          = "scripts/config.js"
-  content      = "window.COUNTER_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/count';\nwindow.CONTACT_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/contact';\n"
+  content      = local.config_js
   content_type = "application/javascript"
-  etag         = md5("window.COUNTER_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/count';\nwindow.CONTACT_API_URL = '${aws_apigatewayv2_stage.visitor_counter.invoke_url}/contact';\n")
+  etag         = md5(local.config_js)
 }
