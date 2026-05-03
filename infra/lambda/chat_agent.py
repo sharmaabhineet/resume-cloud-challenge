@@ -36,7 +36,7 @@ S3_BUCKET       = os.environ["S3_BUCKET"]
 DAILY_TOKEN_CAP           = 33_333
 MONTHLY_TOKEN_CAP         = 1_000_000
 RATE_LIMIT_PER_HOUR       = 10   # chat requests per IP
-RATE_LIMIT_TOKEN_PER_HOUR = 3    # token requests per IP (few page loads per hour is fine)
+RATE_LIMIT_TOKEN_PER_HOUR = 20   # token requests per IP per hour
 TOKEN_WINDOW              = 600  # seconds — token valid for current + previous window
 MAX_USER_MSG_LEN          = 500
 MAX_HISTORY_TURNS         = 8    # last 8 turns = 16 messages
