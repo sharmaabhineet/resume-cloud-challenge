@@ -14,13 +14,15 @@ from datetime import datetime, timezone, timedelta
 
 S3_BUCKET      = os.environ["S3_BUCKET"]
 SECRET_ARN     = os.environ["GITHUB_PAT_SECRET_ARN"]
-BEDROCK_MODEL  = os.environ.get("BEDROCK_MODEL", "anthropic.claude-3-haiku-20240307-v1:0")
+BEDROCK_MODEL  = os.environ.get("BEDROCK_MODEL", "us.anthropic.claude-haiku-4-5-20251001-v1:0")
 GITHUB_USER    = os.environ.get("GITHUB_USER", "sharmaabhineet")
 MAX_REPOS      = int(os.environ.get("MAX_REPOS", "6"))
+SNS_TOPIC_ARN  = os.environ.get("SNS_TOPIC_ARN", "")
 
 s3       = boto3.client("s3")
 sm       = boto3.client("secretsmanager")
 bedrock  = boto3.client("bedrock-runtime", region_name="us-east-1")
+sns      = boto3.client("sns")
 
 
 def get_pat():
@@ -231,50 +233,78 @@ def bedrock_summary(repos, activity, commit_messages):
     return result["content"][0]["text"].strip()
 
 
+def notify_failure(error):
+    if not SNS_TOPIC_ARN:
+        return
+    try:
+        sns.publish(
+            TopicArn=SNS_TOPIC_ARN,
+            Subject="[Portfolio] GitHub fetcher failed — stale data preserved",
+            Message=(
+                f"The GitHub fetcher Lambda failed. Existing repos.json in S3 was NOT overwritten.\n\n"
+                f"Error: {error}\n\n"
+                f"Time (UTC): {datetime.now(timezone.utc).isoformat()}\n"
+                f"Action: Check CloudWatch logs for /aws/lambda/resume-github-fetcher"
+            ),
+        )
+    except Exception as e:
+        print(f"SNS notify failed: {e}")
+
+
 def handler(event, context):
-    token = get_pat()
-
-    # Fetch repos — pinned preferred, fall back to recently pushed
     try:
-        repos = fetch_pinned_repos(token)
-        source = "pinned"
+        token = get_pat()
+
+        # Fetch repos — pinned preferred, fall back to recently pushed
+        try:
+            repos = fetch_pinned_repos(token)
+            source = "pinned"
+        except Exception as e:
+            print(f"Pinned repos failed ({e}), falling back to recent repos")
+            repos = fetch_recent_repos(token)
+            source = "recent"
+
+        if not repos:
+            repos = fetch_recent_repos(token)
+            source = "recent"
+
+        if not repos:
+            notify_failure("GitHub API returned 0 repos — skipping S3 write to preserve stale data")
+            print("WARNING: 0 repos fetched — S3 not updated")
+            return {"statusCode": 200, "body": "0 repos — skipped", "skipped": True}
+
+        activity = fetch_activity_stats(token)
+
+        since_iso = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        commit_messages = fetch_commit_messages(token, activity.get("contributed_repos", []), since_iso)
+
+        try:
+            ai_summary = bedrock_summary(repos, activity, commit_messages)
+        except Exception as e:
+            print(f"Bedrock summary failed: {e}")
+            ai_summary = ""
+
+        public_activity = {k: v for k, v in activity.items() if k != "contributed_repos"}
+        payload = {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "source":        source,
+            "repos":         repos,
+            "activity":      public_activity,
+            "ai_summary":    ai_summary,
+        }
+
+        s3.put_object(
+            Bucket=S3_BUCKET,
+            Key="repos.json",
+            Body=json.dumps(payload, ensure_ascii=False),
+            ContentType="application/json",
+            CacheControl="no-cache, no-store, must-revalidate",
+        )
+
+        print(f"Wrote repos.json — {len(repos)} repos, {activity['commits_30d']} commits, {activity['prs_30d']} PRs, {activity['issues_30d']} issues/30d (incl. private)")
+        return {"statusCode": 200, "body": f"{len(repos)} repos written"}
+
     except Exception as e:
-        print(f"Pinned repos failed ({e}), falling back to recent repos")
-        repos = fetch_recent_repos(token)
-        source = "recent"
-
-    # If GraphQL returned no pinned repos, fall back
-    if not repos:
-        repos = fetch_recent_repos(token)
-        source = "recent"
-
-    activity = fetch_activity_stats(token)
-
-    since_iso = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
-    commit_messages = fetch_commit_messages(token, activity.get("contributed_repos", []), since_iso)
-
-    try:
-        ai_summary = bedrock_summary(repos, activity, commit_messages)
-    except Exception as e:
-        print(f"Bedrock summary failed: {e}")
-        ai_summary = ""
-
-    public_activity = {k: v for k, v in activity.items() if k != "contributed_repos"}
-    payload = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "source":        source,
-        "repos":         repos,
-        "activity":      public_activity,
-        "ai_summary":    ai_summary,
-    }
-
-    s3.put_object(
-        Bucket=S3_BUCKET,
-        Key="repos.json",
-        Body=json.dumps(payload, ensure_ascii=False),
-        ContentType="application/json",
-        CacheControl="no-cache, no-store, must-revalidate",
-    )
-
-    print(f"Wrote repos.json — {len(repos)} repos, {activity['commits_30d']} commits, {activity['prs_30d']} PRs, {activity['issues_30d']} issues/30d (incl. private)")
-    return {"statusCode": 200, "body": f"{len(repos)} repos written"}
+        print(f"GitHub fetcher failed: {e}")
+        notify_failure(str(e))
+        raise

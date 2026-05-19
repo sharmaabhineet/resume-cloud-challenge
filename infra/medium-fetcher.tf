@@ -31,10 +31,19 @@ resource "aws_iam_role_policy" "lambda_medium_fetcher" {
         Resource = "${aws_s3_bucket.website.arn}/posts.json"
       },
       {
-        Sid      = "Bedrock"
+        Sid    = "Bedrock"
+        Effect = "Allow"
+        Action = ["bedrock:InvokeModel"]
+        Resource = [
+          "arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku*",
+          "arn:aws:bedrock:*:*:inference-profile/us.anthropic.claude-haiku*",
+        ]
+      },
+      {
+        Sid      = "SNS"
         Effect   = "Allow"
-        Action   = ["bedrock:InvokeModel"]
-        Resource = "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+        Action   = ["sns:Publish"]
+        Resource = aws_sns_topic.chat_alerts.arn
       },
       {
         Sid      = "BedrockMarketplace"
@@ -75,7 +84,8 @@ resource "aws_lambda_function" "medium_fetcher" {
       S3_BUCKET       = aws_s3_bucket.website.bucket
       MEDIUM_FEED_URL = "https://medium.com/feed/@sharmaabhineet"
       MAX_POSTS       = "6"
-      BEDROCK_MODEL   = "anthropic.claude-3-haiku-20240307-v1:0"
+      BEDROCK_MODEL   = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+      SNS_TOPIC_ARN   = aws_sns_topic.chat_alerts.arn
     }
   }
 

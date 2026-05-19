@@ -891,6 +891,125 @@ footer {
   display: block;
 }
 
+/* ------ Now (Currently Learning) ------ */
+.now-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.35rem;
+  height: 100%;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+  transition: box-shadow .2s, transform .2s;
+}
+.now-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+.now-icon-wrap {
+  width: 38px; height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-pale);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .95rem;
+  flex-shrink: 0;
+}
+
+.now-topic {
+  font-family: 'Poppins', sans-serif;
+  font-size: .92rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.now-text {
+  font-size: .84rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.now-output {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  padding-top: .25rem;
+  margin-top: auto;
+}
+
+.now-pill {
+  font-size: .68rem;
+  font-weight: 500;
+  padding: .15rem .6rem;
+  border-radius: 50px;
+  background: rgba(99,102,241,.08);
+  color: var(--accent);
+  border: 1px solid rgba(99,102,241,.15);
+}
+
+.now-updated {
+  font-size: .78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ------ Featured Projects ------ */
+.featured-project-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  transition: box-shadow .2s;
+}
+.featured-project-card:hover { box-shadow: var(--shadow-lg); }
+
+.featured-project-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin: 0 0 .7rem;
+  line-height: 1.3;
+}
+
+.featured-project-lead {
+  font-size: .93rem;
+  color: var(--text-muted);
+  line-height: 1.75;
+  margin-bottom: 1.25rem;
+}
+
+.featured-project-section-label {
+  font-size: .68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-muted);
+  margin: 0 0 .65rem;
+}
+
+.featured-project-meta-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.featured-project-meta-label {
+  font-size: .68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-muted);
+  margin: 0 0 .6rem;
+}
+
 /* ------ Print ------ */
 .print-header { padding: 1rem 0 .5rem; }
 .print-header h1 { font-size: 1.5rem; margin-bottom: .25rem; }
@@ -1337,6 +1456,22 @@ textarea.contact-input { resize: vertical; min-height: 120px; }
 }
 #chat-send:hover    { background: var(--accent-light); }
 #chat-send:disabled { background: var(--border); cursor: not-allowed; }
+
+/* Dark mode for Now + Projects */
+[data-theme="dark"] .now-card,
+[data-theme="dark"] .featured-project-card {
+  background: var(--white);
+  border-color: var(--border);
+}
+[data-theme="dark"] .featured-project-meta-box {
+  background: var(--bg);
+  border-color: var(--border);
+}
+[data-theme="dark"] .now-pill {
+  background: rgba(129,140,248,.1);
+  border-color: rgba(129,140,248,.2);
+  color: var(--accent);
+}
 
 /* Dark mode */
 [data-theme="dark"] #chat-panel {
