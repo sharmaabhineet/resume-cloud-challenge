@@ -46,6 +46,7 @@ sm      = boto3.client("secretsmanager")
 bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 sns     = boto3.client("sns")
 ses     = boto3.client("ses", region_name="us-east-1")
+s3      = boto3.client("s3")
 
 # Cached across warm invocations
 _cached_master_secret  = None   # HMAC signing key — never leaves the server

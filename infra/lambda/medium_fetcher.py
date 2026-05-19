@@ -15,8 +15,11 @@ import boto3
 S3_BUCKET       = os.environ["S3_BUCKET"]
 MEDIUM_FEED_URL = os.environ["MEDIUM_FEED_URL"]
 MAX_POSTS       = int(os.environ.get("MAX_POSTS", "6"))
-BEDROCK_MODEL   = os.environ.get("BEDROCK_MODEL", "anthropic.claude-3-haiku-20240307-v1:0")
+BEDROCK_MODEL   = os.environ.get("BEDROCK_MODEL", "us.anthropic.claude-haiku-4-5-20251001-v1:0")
 AWS_REGION      = os.environ.get("AWS_REGION", "us-east-1")
+SNS_TOPIC_ARN   = os.environ.get("SNS_TOPIC_ARN", "")
+
+sns = boto3.client("sns")
 
 NS = {
     "content": "http://purl.org/rss/1.0/modules/content/",
@@ -139,32 +142,61 @@ def parse_feed(xml_bytes, max_posts):
     }
 
 
+def notify_failure(error):
+    if not SNS_TOPIC_ARN:
+        return
+    try:
+        sns.publish(
+            TopicArn=SNS_TOPIC_ARN,
+            Subject="[Portfolio] Medium fetcher failed — stale data preserved",
+            Message=(
+                f"The Medium fetcher Lambda failed. Existing posts.json in S3 was NOT overwritten.\n\n"
+                f"Error: {error}\n\n"
+                f"Time (UTC): {datetime.now(timezone.utc).isoformat()}\n"
+                f"Action: Check CloudWatch logs for /aws/lambda/resume-medium-fetcher"
+            ),
+        )
+    except Exception as e:
+        print(f"SNS notify failed: {e}")
+
+
 def handler(event, context):
-    req = urllib.request.Request(
-        MEDIUM_FEED_URL,
-        headers={"User-Agent": "Mozilla/5.0 (compatible; ResumeSiteBot/1.0)"},
-    )
-    with urllib.request.urlopen(req, timeout=15) as resp:
-        xml_bytes = resp.read()
+    try:
+        req = urllib.request.Request(
+            MEDIUM_FEED_URL,
+            headers={"User-Agent": "Mozilla/5.0 (compatible; ResumeSiteBot/1.0)"},
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            xml_bytes = resp.read()
 
-    max_posts = resolve_max_posts(event)
-    feed = parse_feed(xml_bytes, max_posts)
+        max_posts = resolve_max_posts(event)
+        feed = parse_feed(xml_bytes, max_posts)
 
-    payload = {
-        "updated":     datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "posts":       feed["posts"],
-        "total_posts": feed["total_posts"],
-        "top_tags":    feed["top_tags"],
-    }
+        if not feed["posts"]:
+            notify_failure("Feed returned 0 posts — skipping S3 write to preserve stale data")
+            print("WARNING: 0 posts parsed — S3 not updated")
+            return {"statusCode": 200, "posts_written": 0, "skipped": True}
 
-    s3 = boto3.client("s3")
-    s3.put_object(
-        Bucket=S3_BUCKET,
-        Key="posts.json",
-        Body=json.dumps(payload, ensure_ascii=False, indent=2),
-        ContentType="application/json",
-        CacheControl="no-cache, no-store, must-revalidate",
-    )
+        payload = {
+            "updated":     datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "posts":       feed["posts"],
+            "total_posts": feed["total_posts"],
+            "top_tags":    feed["top_tags"],
+        }
 
-    print(f"Wrote {len(feed['posts'])} posts to s3://{S3_BUCKET}/posts.json")
-    return {"statusCode": 200, "posts_written": len(feed["posts"])}
+        s3 = boto3.client("s3")
+        s3.put_object(
+            Bucket=S3_BUCKET,
+            Key="posts.json",
+            Body=json.dumps(payload, ensure_ascii=False, indent=2),
+            ContentType="application/json",
+            CacheControl="no-cache, no-store, must-revalidate",
+        )
+
+        print(f"Wrote {len(feed['posts'])} posts to s3://{S3_BUCKET}/posts.json")
+        return {"statusCode": 200, "posts_written": len(feed["posts"])}
+
+    except Exception as e:
+        print(f"Medium fetcher failed: {e}")
+        notify_failure(str(e))
+        raise

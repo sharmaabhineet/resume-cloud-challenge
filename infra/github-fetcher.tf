@@ -54,10 +54,19 @@ resource "aws_iam_role_policy" "lambda_github_fetcher" {
         Resource = aws_secretsmanager_secret.github_pat.arn
       },
       {
-        Sid      = "Bedrock"
+        Sid    = "Bedrock"
+        Effect = "Allow"
+        Action = ["bedrock:InvokeModel"]
+        Resource = [
+          "arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku*",
+          "arn:aws:bedrock:*:*:inference-profile/us.anthropic.claude-haiku*",
+        ]
+      },
+      {
+        Sid      = "SNS"
         Effect   = "Allow"
-        Action   = ["bedrock:InvokeModel"]
-        Resource = "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+        Action   = ["sns:Publish"]
+        Resource = aws_sns_topic.chat_alerts.arn
       },
       {
         Sid      = "BedrockMarketplace"
@@ -99,7 +108,8 @@ resource "aws_lambda_function" "github_fetcher" {
       GITHUB_PAT_SECRET_ARN = aws_secretsmanager_secret.github_pat.arn
       GITHUB_USER           = "sharmaabhineet"
       MAX_REPOS             = "6"
-      BEDROCK_MODEL         = "anthropic.claude-3-haiku-20240307-v1:0"
+      BEDROCK_MODEL         = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+      SNS_TOPIC_ARN         = aws_sns_topic.chat_alerts.arn
     }
   }
 

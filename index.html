@@ -117,6 +117,8 @@
           <a href="#about"          class="nav-link-item">About</a>
           <a href="#skills"         class="nav-link-item">Skills</a>
           <a href="#experience"     class="nav-link-item">Experience</a>
+          <a href="#projects"       class="nav-link-item">Projects</a>
+          <a href="#now"            class="nav-link-item">Exploring</a>
           <a href="#writing"        class="nav-link-item">Writing</a>
           <a href="#github"         class="nav-link-item">GitHub</a>
           <a href="#education"      class="nav-link-item">Education</a>
@@ -557,33 +559,139 @@
     </div>
   </section>
 
-  <!-- ===== Selected Work ===== -->
-  <section class="section section-alt" aria-label="Selected work">
+  <!-- ===== Projects ===== -->
+  <section id="projects" class="section" aria-label="Featured projects">
     <div class="container">
-      <h2 class="section-title">Selected Work</h2>
-      <div class="row g-3">
-        <div class="col-md-6 col-lg-4" data-aos="fade-up">
-          <div class="work-card">
-            <p class="work-kicker">Performance</p>
-            <h3 class="work-title">Reduced CPU time in high-demand ad workloads</h3>
-            <p class="work-text">Improved existing algorithms in production paths, contributing to roughly 2% CPU-time reduction where small gains compound at scale.</p>
+      <h2 class="section-title">Featured Projects</h2>
+      <p class="section-intro">
+        Private side projects built to production standards &mdash; not toy demos, but systems designed for reliability, evaluation, and iteration.
+      </p>
+
+      <!-- Trading Agent — featured -->
+      <div class="featured-project-card mb-4" data-aos="fade-up">
+        <div class="row g-4 align-items-start">
+          <div class="col-lg-8">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <p class="project-kicker mb-0">The Coolest Thing I&rsquo;ve Built</p>
+              <span class="private-badge">Private</span>
+            </div>
+            <h3 class="featured-project-title">AI-Driven Trading Agent</h3>
+            <p class="featured-project-lead">
+              A multi-agent LLM system that reasons about market structure using structured pipelines, not freeform generation. Built to be evaluatable, debuggable, and safe by design.
+            </p>
+            <p class="featured-project-section-label">Architecture highlights</p>
+            <ul class="tl-highlights">
+              <li><strong>Pre/post LLM hooks</strong> inject structured market context before each call and validate output shape and logic after &mdash; the LLM operates inside a reasoning harness, not as a black box</li>
+              <li><strong>Probabilistic critique agent</strong> samples a subset of decisions and challenges them with adversarial reasoning before they propagate &mdash; a second layer of structured skepticism at low overhead</li>
+              <li><strong>Backtesting replays prompts</strong> against synthetic historical data for systematic, reproducible evaluation &mdash; decisions are scored, not just judged by feel</li>
+            </ul>
           </div>
-        </div>
-        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="70">
-          <div class="work-card">
-            <p class="work-kicker">Product Impact</p>
-            <h3 class="work-title">Improved ad signals tied to spend growth</h3>
-            <p class="work-text">Used backend changes, data analysis, and cross-functional collaboration to improve ad signals, contributing to about 5% platform spend growth.</p>
-          </div>
-        </div>
-        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="140">
-          <div class="work-card">
-            <p class="work-kicker">Outside Work</p>
-            <h3 class="work-title">Exploring event-driven AWS and AI-backed systems</h3>
-            <p class="work-text">Building hands-on systems to understand RAG pipelines, LLM-assisted decisioning, replayable event logs, and practical serverless architecture.</p>
+          <div class="col-lg-4">
+            <div class="featured-project-meta-box">
+              <p class="featured-project-meta-label">Stack</p>
+              <div class="skill-chips mb-3">
+                <span class="chip featured">Python</span>
+                <span class="chip">LLM Orchestration</span>
+                <span class="chip">Event-driven</span>
+                <span class="chip">AWS</span>
+                <span class="chip">Backtesting</span>
+              </div>
+              <p class="featured-project-meta-label">Engineering patterns</p>
+              <div class="skill-chips">
+                <span class="chip">Pre/post hooks</span>
+                <span class="chip">Critique agent</span>
+                <span class="chip">Prompt eval</span>
+                <span class="chip">Event replay</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- Ask My Docs — featured -->
+      <div class="featured-project-card" data-aos="fade-up">
+        <div class="row g-4 align-items-start">
+          <div class="col-lg-8">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <p class="project-kicker mb-0">RAG Platform</p>
+              <span class="private-badge">Private</span>
+            </div>
+            <h3 class="featured-project-title">Ask My Docs</h3>
+            <p class="featured-project-lead">
+              A custom RAG experimentation platform built from scratch &mdash; no LangChain, no LlamaIndex. Designed for reproducible retrieval experiments with full pipeline observability.
+            </p>
+            <p class="featured-project-section-label">Architecture highlights</p>
+            <ul class="tl-highlights">
+              <li><strong>Async ingestion pipeline</strong> via FastAPI + ARQ task queue (Redis-backed): parse &rarr; chunk &rarr; embed &rarr; index &mdash; each stage instrumented with metrics and failure states</li>
+              <li><strong>Hybrid retrieval</strong> over the same chunk corpus: pgvector HNSW index for semantic search and PostgreSQL tsvector GIN index for full-text keyword search &mdash; independent indexes, configurable weighting</li>
+              <li><strong>Immutable run model</strong> &mdash; ingestion configs are frozen; changing chunking strategy or embedding model triggers a new run, never mutating an existing one &mdash; reproducible experiments by design</li>
+            </ul>
+          </div>
+          <div class="col-lg-4">
+            <div class="featured-project-meta-box">
+              <p class="featured-project-meta-label">Stack</p>
+              <div class="skill-chips mb-3">
+                <span class="chip featured">Python</span>
+                <span class="chip">FastAPI</span>
+                <span class="chip">PostgreSQL</span>
+                <span class="chip">pgvector</span>
+                <span class="chip">Redis</span>
+                <span class="chip">React + TypeScript</span>
+              </div>
+              <p class="featured-project-meta-label">Engineering patterns</p>
+              <div class="skill-chips">
+                <span class="chip">HNSW index</span>
+                <span class="chip">Full-text (GIN)</span>
+                <span class="chip">Async task queue</span>
+                <span class="chip">Immutable runs</span>
+                <span class="chip">Content-addressed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== Now ===== -->
+  <section id="now" class="section section-alt" aria-label="Currently learning">
+    <div class="container">
+      <h2 class="section-title">Currently Exploring</h2>
+      <p class="section-intro">
+        Active explorations with shipped artifacts &mdash; each area feeds directly into side projects or published writing, not just bookmarks.
+      </p>
+      <div class="row g-3 mb-3">
+
+        <div class="col-md-6 col-lg-3" data-aos="fade-up">
+          <div class="now-card">
+            <div class="now-icon-wrap"><i class="fas fa-database" aria-hidden="true"></i></div>
+            <p class="now-topic">RAG &amp; Retrieval Systems</p>
+            <p class="now-text">Hybrid BM25 + vector search, chunking strategies, retrieval evaluation with reproducible metrics. Not just wiring an API &mdash; measuring when retrieval is actually good.</p>
+            <div class="now-output"><span class="now-pill">Ask My Docs</span><span class="now-pill">Medium</span></div>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="60">
+          <div class="now-card">
+            <div class="now-icon-wrap"><i class="fas fa-robot" aria-hidden="true"></i></div>
+            <p class="now-topic">Multi-agent LLM Orchestration</p>
+            <p class="now-text">Designing systems where multiple agents collaborate using structured reasoning &mdash; pre/post hooks, critique loops, and prompt evaluation pipelines that catch failures before they propagate.</p>
+            <div class="now-output"><span class="now-pill">Trading Agent</span><span class="now-pill">Medium</span></div>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="120">
+          <div class="now-card">
+            <div class="now-icon-wrap"><i class="fas fa-bolt" aria-hidden="true"></i></div>
+            <p class="now-topic">Event-driven Platforms</p>
+            <p class="now-text">Replayable event logs, at-least-once delivery, and AWS-native ingestion for production AI workflows. The kind of infra where you can replay history and trust what you observe.</p>
+            <div class="now-output"><span class="now-pill">Trading Agent</span><span class="now-pill">AWS</span></div>
+          </div>
+        </div>
+
+      </div>
+      <p class="now-updated"><i class="fas fa-calendar-check me-1" aria-hidden="true"></i>Updated May 2026</p>
     </div>
   </section>
 
@@ -743,41 +851,6 @@
       <div id="repos-grid" class="row g-3">
         <div class="col-12 text-center py-4" id="repos-loading">
           <span style="color:var(--text-muted); font-size:.875rem;">Loading repositories&hellip;</span>
-        </div>
-      </div>
-
-      <!-- Highlighted private projects -->
-      <h3 class="github-projects-heading mt-5 mb-3" data-aos="fade-up">Projects</h3>
-      <div class="row g-3 mb-4">
-        <div class="col-md-6" data-aos="fade-up">
-          <div class="project-card">
-            <div class="project-head">
-              <p class="project-kicker">Trading AI Agent</p>
-              <span class="private-badge">Private</span>
-            </div>
-            <h3 class="project-title">Exploring decision loops for market workflows</h3>
-            <p class="project-text">
-              A private prototype focused on event-driven trading logic, LLM-assisted analysis, replayable prompts, and guardrails around deterministic execution.
-            </p>
-            <p class="project-meta">
-              Python &middot; event logs &middot; backtesting &middot; LLM orchestration &middot; prompt evaluation
-            </p>
-          </div>
-        </div>
-        <div class="col-md-6" data-aos="fade-up" data-aos-delay="80">
-          <div class="project-card">
-            <div class="project-head">
-              <p class="project-kicker">Ask My Docs</p>
-              <span class="private-badge">Private</span>
-            </div>
-            <h3 class="project-title">RAG for document search and cited answers</h3>
-            <p class="project-text">
-              A private RAG workspace for testing ingestion, chunking, retrieval quality, and answer citation across document collections.
-            </p>
-            <p class="project-meta">
-              Python &middot; embeddings &middot; vector search &middot; retrieval ranking &middot; citations
-            </p>
-          </div>
         </div>
       </div>
 
