@@ -82,6 +82,15 @@ resource "aws_s3_object" "html" {
   etag         = filemd5("${local.website_src}/index.html")
 }
 
+resource "aws_s3_object" "projects_html" {
+  for_each     = fileset("${local.website_src}/projects/", "**/*.html")
+  bucket       = aws_s3_bucket.website.bucket
+  key          = "projects/${each.value}"
+  source       = "${local.website_src}/projects/${each.value}"
+  content_type = "text/html"
+  etag         = filemd5("${local.website_src}/projects/${each.value}")
+}
+
 resource "aws_s3_object" "images_png" {
   for_each     = fileset("${local.website_src}/images/", "**/*.png")
   bucket       = aws_s3_bucket.website.bucket
