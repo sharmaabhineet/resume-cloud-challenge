@@ -334,6 +334,64 @@ body {
   font-weight: 500;
 }
 
+/* ------ Strategic Tech Radar ------ */
+.radar-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  height: 100%;
+  box-shadow: var(--shadow);
+  transition: transform .2s, box-shadow .2s;
+  display: flex;
+  flex-direction: column;
+}
+.radar-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+.radar-header {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  margin-bottom: .75rem;
+}
+.radar-header i { font-size: 1.15rem; }
+.radar-header h3 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: .05em;
+}
+
+.radar-desc {
+  font-size: .82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 1.15rem;
+  flex-grow: 1;
+}
+
+.radar-card.adopt { border-top-color: #10b981; }
+.radar-card.adopt i { color: #10b981; }
+.radar-card.trial { border-top-color: var(--accent); }
+.radar-card.trial i { color: var(--accent); }
+.radar-card.assess { border-top-color: #f59e0b; }
+.radar-card.assess i { color: #f59e0b; }
+.radar-card.hold { border-top-color: #ef4444; }
+.radar-card.hold i { color: #ef4444; }
+
+/* Dark mode overrides */
+[data-theme="dark"] .radar-card {
+  background: var(--white);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .radar-card.adopt { border-top-color: #34d399; }
+[data-theme="dark"] .radar-card.trial { border-top-color: var(--accent); }
+[data-theme="dark"] .radar-card.assess { border-top-color: #fbbf24; }
+[data-theme="dark"] .radar-card.hold { border-top-color: #f87171; }
+
 /* ------ Timeline ------ */
 .experience-summary {
   max-width: 900px;
