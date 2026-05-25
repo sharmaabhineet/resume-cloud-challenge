@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="AI-Driven Trading Agent — A deep dive into multi-agent LLM architecture and structured reasoning pipelines." />
+  <title>AI-Driven Trading Agent — Abhineet Sharma</title>
+  
+  <link rel="icon" type="image/jpeg" href="../images/Avatar.jpg" />
+  <link rel="apple-touch-icon" href="../images/Avatar.jpg" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Roboto:wght@300;400;500;700&display=swap" />
+
+  <!-- Stylesheets -->
+  <link href="../css/font-awesome/css/all.min.css" rel="stylesheet" />
+  <link href="../css/bootstrap.min.css" rel="stylesheet" />
+  <link href="../css/aos.css" rel="stylesheet" />
+  <link href="../css/main.css" rel="stylesheet" />
+  <link href="../css/site.css" rel="stylesheet" />
+
+  <style>
+    .project-hero {
+      padding: 100px 0 60px;
+      background: var(--bg-alt);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .architecture-diagram {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      margin: 40px 0;
+      border: 1px solid var(--border-color);
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    .zoomable-img {
+      cursor: zoom-in;
+      transition: opacity 0.2s;
+      max-width: 100%;
+      background-color: #fcfcfc; /* Off-white background */
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .zoomable-img:hover {
+      opacity: 0.9;
+    }
+    .img-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 2000;
+      display: none;
+      cursor: zoom-out;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+    .img-overlay.active { display: flex; }
+    .img-overlay img {
+      max-width: 95vw;
+      max-height: 95vh;
+      object-fit: contain;
+      box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+      border-radius: 8px;
+      background-color: #fcfcfc; /* Off-white background for zoomed version */
+      padding: 20px;
+    }
+    .decision-log {
+      background: var(--accent-pale);
+      border-left: 4px solid var(--accent);
+      padding: 20px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+    }
+    .back-nav {
+      margin-bottom: 2rem;
+    }
+    .back-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .back-link:hover {
+      color: var(--accent);
+    }
+  </style>
+</head>
+
+<body id="top">
+  <div id="overlay" class="img-overlay">
+    <img id="overlay-img" src="" alt="Zoomed Architecture Diagram">
+  </div>
+
+  <!-- ===== Navigation ===== -->
+  <nav class="site-nav d-print-none" aria-label="Main navigation">
+    <div class="container">
+      <div class="d-flex align-items-center justify-content-between">
+        <a href="../index.html" class="nav-brand">Abhineet Sharma</a>
+        <div class="d-flex align-items-center gap-3">
+            <a href="../index.html#projects" class="nav-link-item">All Projects</a>
+            <a href="../files/abhineet-resume.pdf" target="_blank" class="nav-link-item nav-cta">
+                <i class="fas fa-download" aria-hidden="true"></i> Resume
+            </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Project Hero ===== -->
+  <header class="project-hero">
+    <div class="container">
+      <nav class="back-nav" data-aos="fade-up">
+        <a href="../index.html#projects" class="back-link">
+          <i class="fas fa-arrow-left me-2"></i> Back to Portfolio
+        </a>
+      </nav>
+      <div class="row align-items-center">
+        <div class="col-lg-8" data-aos="fade-right">
+          <p class="project-kicker mb-2">The Coolest Thing I&rsquo;ve Built</p>
+          <h1 class="hero-name mb-3">AI-Driven Trading Agent</h1>
+          <p class="hero-tagline" style="font-size: 1.25rem;">
+            A multi-agent LLM system that reasons about market structure using structured pipelines, 
+            prioritizing observability and reproducible evaluation over freeform generation.
+          </p>
+          <div class="skill-chips mt-4">
+            <span class="chip featured">Python 3</span>
+            <span class="chip featured">Go</span>
+            <span class="chip">FastAPI</span>
+            <span class="chip">Ollama (DeepSeek-R1)</span>
+            <span class="chip">PostgreSQL</span>
+            <span class="chip">NATS JetStream</span>
+            <span class="chip">Docker</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="section">
+    <div class="container">
+      <div class="row g-5">
+        
+        <!-- Main Content -->
+        <div class="col-lg-8">
+          
+          <section id="problem" class="mb-5" data-aos="fade-up">
+            <h2 class="section-title" style="text-align: left; margin-left: 0;">The Challenge</h2>
+            <p>
+              The promise of LLMs in finance is often hampered by their stochastic nature. Standard "chatbot" 
+              approaches fail because they lack grounding in real-time market data and tend to hallucinate 
+              narratives that don't exist in the numbers. 
+            </p>
+            <p>
+              I wanted to build a system that treated the LLM as a <strong>reasoning engine</strong>, not a 
+              source of truth. This meant building a "harness" that could feed it structured context and 
+              verify its logic before any action was taken.
+            </p>
+          </section>
+
+          <section id="architecture" class="mb-5" data-aos="fade-up">
+            <h2 class="section-title" style="text-align: left; margin-left: 0;">Architecture Deep Dive</h2>
+            <p>
+              The system is built on an <strong>event-driven, decoupled architecture</strong> that separates 
+              high-frequency ingestion (Go) from probabilistic reasoning (Python). This ensures that the 
+              reasoning engine operates on a standardized, canonical data stream regardless of the provider.
+            </p>
+            
+            <div class="architecture-diagram">
+              <img src="../images/trading-architecture.png" id="arch-img" alt="Trading Agent Architecture - Event-Driven Flow" class="zoomable-img img-fluid rounded">
+              <p class="text-muted small mt-4">Click to zoom. This system map illustrates the decoupled Go-to-Python handoff and the multi-stage reasoning harness.</p>
+            </div>
+
+            <h3 class="h4 mt-4">1. Grounding via Pre/Post Hooks</h3>
+            <p>
+              To ensure data-driven execution, the <strong>Context Injector</strong> (Pre-hook) pulls the latest 
+              technical indicators, order book depth, and sentiment analysis. This grounding ensures the LLM 
+              operates on a structured "world view" of current market facts.
+            </p>
+            <p>
+              The <strong>Validator</strong> (Post-hook) enforces architectural invariants, ensuring the 
+              output matches a strict JSON schema and performs safety checks against risk limits before 
+              any trade is proposed.
+            </p>
+
+            <h3 class="h4 mt-4">2. The Critique Loop</h3>
+            <p>
+              A separate <strong>Critique Agent</strong> acts as a "Red Team" within the reasoning pipeline. 
+              It receives the primary decision and attempts to invalidate the logic using adversarial reasoning. 
+              This approach reduces Impulse-based trades and ensures every signal survives a layer of structured 
+              skepticism.
+            </p>
+
+            <h3 class="h4 mt-4">3. Reliable State & Idempotency</h3>
+            <p>
+              In a distributed trading system, <strong>at-least-once delivery</strong> and <strong>idempotency</strong> 
+              are non-negotiable. I implemented the <strong>Transactional Outbox Pattern</strong> to ensure 
+              that signals and orders are persisted to PostgreSQL before being published to NATS. This 
+              atomicity guarantees that no "intent to trade" is lost, and the executor can safely retry 
+              placements without risk of duplicate orders.
+            </p>
+          </section>
+
+          <section id="decisions" class="mb-5" data-aos="fade-up">
+            <h2 class="section-title" style="text-align: left; margin-left: 0;">Strategic Decisions</h2>
+            
+            <div class="decision-log">
+              <strong>Decision: Custom Ingestion in Go with Layered Deduplication</strong>
+              <p class="mb-0 mt-2">
+                The ingestion layer was built in Go to handle high-concurrency WebSocket feeds. To manage 
+                high-frequency tick data, I implemented a layered deduplication strategy using 
+                <strong>Redis</strong> as an L2 cache, ensuring that only unique, actionable events 
+                propagate downstream to the reasoning engine.
+              </p>
+            </div>
+
+            <div class="decision-log">
+              <strong>Decision: No LangChain or LlamaIndex</strong>
+              <p class="mb-0 mt-2">
+                While these frameworks are great for prototyping, I chose to build the orchestration 
+                logic from scratch. This provided full control over the execution flow, explicit 
+                instrumentation points for distributed tracing and telemetry, and avoided the 
+                "framework magic" that makes production debugging difficult.
+              </p>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+          <div class="featured-project-meta-box sticky-top" style="top: 100px;">
+            <p class="featured-project-meta-label">Technical Stack</p>
+            <div class="skill-chips mb-4">
+              <span class="chip">Python 3</span>
+              <span class="chip">Go</span>
+              <span class="chip">FastAPI</span>
+              <span class="chip">Ollama</span>
+              <span class="chip">PostgreSQL</span>
+              <span class="chip">Redis</span>
+              <span class="chip">NATS JetStream</span>
+              <span class="chip">Docker</span>
+              <span class="chip">Prometheus</span>
+              <span class="chip">Grafana</span>
+            </div>
+
+            <p class="featured-project-meta-label">Engineering Patterns</p>
+            <ul class="list-unstyled">
+              <li class="mb-2"><i class="fas fa-check text-accent me-2"></i> Transactional Outbox</li>
+              <li class="mb-2"><i class="fas fa-check text-accent me-2"></i> Idempotent Execution</li>
+              <li class="mb-2"><i class="fas fa-check text-accent me-2"></i> Layered Deduplication</li>
+              <li class="mb-2"><i class="fas fa-check text-accent me-2"></i> Observability-first design</li>
+            </ul>
+
+            <hr />
+            
+            <p class="text-muted small">
+              This project is currently private as it contains proprietary trading logic, 
+              but I am happy to chat more about learnings and all, feel free to contact me.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="section-alt py-5">
+    <div class="container text-center">
+      <p class="footer-name">Abhineet Sharma</p>
+      <p class="text-muted">&copy; 2026 &middot; Designed by AI &middot; Built on AWS</p>
+      <a href="../index.html" class="btn btn-outline-secondary btn-sm mt-3">
+        <i class="fas fa-home me-2"></i> Back to Homepage
+      </a>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="../scripts/bootstrap.bundle.min.js"></script>
+  <script src="../scripts/aos.js"></script>
+  <script>
+    AOS.init({ duration: 800, once: true });
+    
+    // Theme sync (since this is a subpage)
+    (function() {
+      var stored = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var isDark = stored ? stored === 'dark' : prefersDark;
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    })();
+    // Zoom functionality
+    (function() {
+      const img = document.getElementById('arch-img');
+      const overlay = document.getElementById('overlay');
+      const overlayImg = document.getElementById('overlay-img');
+      
+      if (img && overlay && overlayImg) {
+        img.addEventListener('click', function() {
+          overlayImg.src = this.src;
+          overlay.classList.add('active');
+          document.body.style.overflow = 'hidden'; // Prevent scrolling
+        });
+        
+        overlay.addEventListener('click', function() {
+          overlay.classList.remove('active');
+          document.body.style.overflow = ''; // Restore scrolling
+        });
+      }
+    })();
+  </script>
+
+</body>
+</html>

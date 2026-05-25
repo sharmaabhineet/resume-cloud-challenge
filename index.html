@@ -213,9 +213,12 @@
             Overall <strong id="cloudExp">~8</strong> years of cloud experience, currently at Yieldmo —
             shipping video ad-tech features that measurably move advertiser
             spend on a platform processing billions of ad requests daily.
-          </p>
-          <figure class="mantra-card">
-            <blockquote>
+            <br /><br />
+            Beyond the code, I'm passionate about the "human" side of engineering—mentorship, 
+            fostering a culture of shared learning, and ensuring that technical decisions 
+            align with long-term business and team sustainability.
+            </p>
+            <figure class="mantra-card">            <blockquote>
               Paradigms are tools, not religions. Build systems that fit the problem.
             </blockquote>
           </figure>
@@ -293,71 +296,86 @@
     </div>
   </section>
 
-  <!-- ===== Skills ===== -->
-  <section id="skills" class="section" aria-label="Skills">
+  <!-- ===== Strategic Tech Radar ===== -->
+  <section id="skills" class="section" aria-label="Strategic technology radar">
     <div class="container">
-      <h2 class="section-title">Skills</h2>
+      <h2 class="section-title">Strategic Tech Radar</h2>
+      <p class="section-intro mb-5">
+        How I think about technology. This isn't just a list of keywords, but a strategic view of what I trust for production,
+        what I'm currently trialing, and what I'm keeping an eye on.
+      </p>
       <div class="row g-4">
-
-        <div class="col-md-6 col-lg-4" data-aos="fade-up">
-          <div class="skill-group">
-            <p class="skill-group-label">Expert</p>
-            <div class="skill-chips">
-              <span class="chip featured">Java</span>
-              <span class="chip featured">Backend Development</span>
+        
+        <!-- ADOPT -->
+        <div class="col-lg-3 col-md-6" data-aos="fade-up">
+          <div class="radar-card adopt">
+            <div class="radar-header">
+              <i class="fas fa-check-circle"></i>
+              <h3>ADOPT</h3>
             </div>
-          </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="75">
-          <div class="skill-group">
-            <p class="skill-group-label">Strong</p>
+            <p class="radar-desc">Production-hardened. High confidence for mission-critical systems.</p>
             <div class="skill-chips">
-              <span class="chip featured">Microservices</span>
-              <span class="chip featured">Python</span>
-              <span class="chip featured">GRPC</span>
-              <span class="chip featured">SQL</span>
-              <span class="chip featured">Docker</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="150">
-          <div class="skill-group">
-            <p class="skill-group-label">Working Knowledge</p>
-            <div class="skill-chips">
-              <span class="chip">Kafka</span>
-              <span class="chip">Golang</span>
-              <span class="chip">C++</span>
-              <span class="chip">R</span>
-              <span class="chip">Machine Learning</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="150">
-          <div class="skill-group">
-            <p class="skill-group-label">Practices</p>
-            <div class="skill-chips">
+              <span class="chip featured" title="15+ years of deep expertise">Java</span>
               <span class="chip featured">Distributed Systems</span>
-              <span class="chip">CI/CD</span>
-              <span class="chip">TDD</span>
-              <span class="chip">Code Review</span>
-              <span class="chip featured">Agile</span>
+              <span class="chip featured">Microservices</span>
+              <span class="chip">SQL</span>
+              <span class="chip">AWS Core</span>
+              <span class="chip">Terraform</span>
             </div>
           </div>
         </div>
 
-        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="225">
-          <div class="skill-group">
-            <p class="skill-group-label">Infrastructure</p>
+        <!-- TRIAL -->
+        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+          <div class="radar-card trial">
+            <div class="radar-header">
+              <i class="fas fa-flask"></i>
+              <h3>TRIAL</h3>
+            </div>
+            <p class="radar-desc">Successfully used in focused scenarios. Ready for broader use.</p>
             <div class="skill-chips">
-              <span class="chip featured">AWS</span>
-              <span class="chip">Terraform</span>
-              <span class="chip">Linux</span>
+              <span class="chip featured">Python 3</span>
+              <span class="chip">Spring Boot</span>
+              <span class="chip">pgvector</span>
+              <span class="chip">FastAPI</span>
+              <span class="chip">Ollama (DeepSeek-R1)</span>
               <span class="chip">Redis</span>
-              <span class="chip">DynamoDB</span>
-              <span class="chip">PostgreSQL</span>
+              <span class="chip">Docker</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ASSESS -->
+        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+          <div class="radar-card assess">
+            <div class="radar-header">
+              <i class="fas fa-search"></i>
+              <h3>ASSESS</h3>
+            </div>
+            <p class="radar-desc">Actively researching. Promising for specific use cases.</p>
+            <div class="skill-chips">
+              <span class="chip">Go (Golang)</span>
+              <span class="chip">Kafka @ Scale</span>
+              <span class="chip">Multi-agent LLMs</span>
+              <span class="chip">R / ML Research</span>
+              <span class="chip">GRPC</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- HOLD -->
+        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+          <div class="radar-card hold">
+            <div class="radar-header">
+              <i class="fas fa-hand-paper"></i>
+              <h3>HOLD</h3>
+            </div>
+            <p class="radar-desc">Proceed with caution. Often over-hyped or misapplied.</p>
+            <div class="skill-chips">
+              <span class="chip">Complex RAG Frameworks</span>
+              <span class="chip">NoSQL-first for Relational</span>
+              <span class="chip">Manual Infrastructure</span>
+              <span class="chip">Distributed Monoliths</span>
             </div>
           </div>
         </div>
@@ -488,6 +506,7 @@
             <ul class="tl-highlights">
               <li>Led back-end initiatives for a high-throughput ad delivery platform, focused on real-time decisioning, signal quality, and system efficiency</li>
               <li>Designed and optimized distributed services under strict latency constraints in revenue-critical paths</li>
+              <li>Spearheaded a cross-functional investigation into a complex production viewability discrepancy, bridging backend and frontend domains to reduce data variance to within 4–5% and restore metric integrity</li>
               <li>Reduced CPU utilization by ~2% through algorithmic and system-level optimizations in high-demand production workloads</li>
               <li>Improved ad signal quality through data-driven enhancements, contributing to ~5% increase in platform spend</li>
               <li>Built a next-generation data provider library with cleaner abstractions, reducing development effort and enabling faster feature iteration</li>
@@ -585,15 +604,21 @@
               <li><strong>Probabilistic critique agent</strong> samples a subset of decisions and challenges them with adversarial reasoning before they propagate &mdash; a second layer of structured skepticism at low overhead</li>
               <li><strong>Backtesting replays prompts</strong> against synthetic historical data for systematic, reproducible evaluation &mdash; decisions are scored, not just judged by feel</li>
             </ul>
+            <div class="mt-4">
+              <a href="projects/trading-agent.html" class="btn-accent">
+                <i class="fas fa-book-open me-2"></i> Read Case Study
+              </a>
+            </div>
           </div>
           <div class="col-lg-4">
             <div class="featured-project-meta-box">
               <p class="featured-project-meta-label">Stack</p>
               <div class="skill-chips mb-3">
-                <span class="chip featured">Python</span>
-                <span class="chip">LLM Orchestration</span>
-                <span class="chip">Event-driven</span>
-                <span class="chip">AWS</span>
+                <span class="chip featured">Python 3</span>
+                <span class="chip featured">Go</span>
+                <span class="chip">Ollama</span>
+                <span class="chip">PostgreSQL</span>
+                <span class="chip">NATS</span>
                 <span class="chip">Backtesting</span>
               </div>
               <p class="featured-project-meta-label">Engineering patterns</p>
@@ -626,6 +651,11 @@
               <li><strong>Hybrid retrieval</strong> over the same chunk corpus: pgvector HNSW index for semantic search and PostgreSQL tsvector GIN index for full-text keyword search &mdash; independent indexes, configurable weighting</li>
               <li><strong>Immutable run model</strong> &mdash; ingestion configs are frozen; changing chunking strategy or embedding model triggers a new run, never mutating an existing one &mdash; reproducible experiments by design</li>
             </ul>
+            <div class="mt-4">
+              <a href="projects/ask-my-docs.html" class="btn-accent">
+                <i class="fas fa-book-open me-2"></i> Read Case Study
+              </a>
+            </div>
           </div>
           <div class="col-lg-4">
             <div class="featured-project-meta-box">
@@ -923,7 +953,7 @@
       </div>
       <p class="footer-copy">
         &copy; <span id="footerYear"></span> Abhineet Sharma &nbsp;&middot;&nbsp;
-        <span class="credit">Built on AWS</span>
+        <span class="credit">Designed by AI &middot; Built on AWS</span>
       </p>
     </div>
   </footer>

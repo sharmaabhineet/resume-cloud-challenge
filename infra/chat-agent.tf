@@ -113,7 +113,6 @@ resource "aws_iam_role_policy" "lambda_chat_agent" {
         Effect = "Allow"
         Action = ["bedrock:InvokeModel"]
         Resource = [
-          "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-haiku*",
           "arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku*",
           "arn:aws:bedrock:*:*:inference-profile/us.anthropic.claude-haiku*",
         ]

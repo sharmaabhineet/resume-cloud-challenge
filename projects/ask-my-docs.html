@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Ask My Docs — A custom RAG platform built for reproducible retrieval experiments without the overhead of heavy frameworks." />
+  <title>Ask My Docs — Abhineet Sharma</title>
+  
+  <link rel="icon" type="image/jpeg" href="../images/Avatar.jpg" />
+  <link rel="apple-touch-icon" href="../images/Avatar.jpg" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Roboto:wght@300;400;500;700&display=swap" />
+
+  <!-- Stylesheets -->
+  <link href="../css/font-awesome/css/all.min.css" rel="stylesheet" />
+  <link href="../css/bootstrap.min.css" rel="stylesheet" />
+  <link href="../css/aos.css" rel="stylesheet" />
+  <link href="../css/main.css" rel="stylesheet" />
+  <link href="../css/site.css" rel="stylesheet" />
+
+  <style>
+    .project-hero {
+      padding: 100px 0 60px;
+      background: var(--bg-alt);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .architecture-diagram {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      margin: 40px 0;
+      border: 1px solid var(--border-color);
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    .zoomable-img {
+      cursor: zoom-in;
+      transition: opacity 0.2s;
+      max-width: 100%;
+      background-color: #fcfcfc; /* Off-white background */
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .zoomable-img:hover {
+      opacity: 0.9;
+    }
+    .img-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 2000;
+      display: none;
+      cursor: zoom-out;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+    .img-overlay.active { display: flex; }
+    .img-overlay img {
+      max-width: 95vw;
+      max-height: 95vh;
+      object-fit: contain;
+      box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+      border-radius: 8px;
+      background-color: #fcfcfc; /* Off-white background for zoomed version */
+      padding: 20px;
+    }
+    .decision-log {
+      background: var(--accent-pale);
+      border-left: 4px solid var(--accent);
+      padding: 20px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+    }
+    .back-nav {
+      margin-bottom: 2rem;
+    }
+    .back-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .back-link:hover {
+      color: var(--accent);
+    }
+  </style>
+</head>
+
+<body id="top">
+  <div id="overlay" class="img-overlay">
+    <img id="overlay-img" src="" alt="Zoomed Architecture Diagram">
+  </div>
+
+  <!-- ===== Navigation ===== -->
+  <nav class="site-nav d-print-none" aria-label="Main navigation">
+    <div class="container">
+      <div class="d-flex align-items-center justify-content-between">
+        <a href="../index.html" class="nav-brand">Abhineet Sharma</a>
+        <div class="d-flex align-items-center gap-3">
+            <a href="../index.html#projects" class="nav-link-item">All Projects</a>
+            <a href="../files/abhineet-resume.pdf" target="_blank" class="nav-link-item nav-cta">
+                <i class="fas fa-download" aria-hidden="true"></i> Resume
+            </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Project Hero ===== -->
+  <header class="project-hero">
+    <div class="container">
+      <nav class="back-nav" data-aos="fade-up">
+        <a href="../index.html#projects" class="back-link">
+          <i class="fas fa-arrow-left me-2"></i> Back to Portfolio
+        </a>
+      </nav>
+      <div class="row align-items-center">
+        <div class="col-lg-8" data-aos="fade-right">
+          <p class="project-kicker mb-2">RAG Platform</p>
+          <h1 class="hero-name mb-3">Ask My Docs</h1>
+          <p class="hero-tagline" style="font-size: 1.25rem;">
+            A custom RAG platform built from scratch to enable deep experimentation with chunking strategies, 
+            hybrid retrieval, and pipeline observability.
+          </p>
+          <div class="skill-chips mt-4">
+            <span class="chip featured">Python 3</span>
+            <span class="chip">FastAPI</span>
+            <span class="chip">Ollama (DeepSeek-R1)</span>
+            <span class="chip">PostgreSQL</span>
+            <span class="chip">pgvector</span>
+            <span class="chip">Redis</span>
+            <span class="chip">React</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="section">
+    <div class="container">
+      <div class="row g-5">
+        
+        <!-- Main Content -->
+        <div class="col-lg-8">
+          
+          <section id="problem" class="mb-5" data-aos="fade-up">
+            <h2 class="section-title" style="text-align: left; margin-left: 0;">The Challenge</h2>
+            <p>
+              The AI ecosystem is heavily saturated with "one-line RAG" solutions using LangChain or LlamaIndex. While 
+              useful for rapid prototyping, these frameworks often obscure the critical parts of the pipeline: 
+              chunking logic, retrieval weighting, and latency bottlenecks.
+            </p>
+            <p>
+              I built <strong>Ask My Docs</strong> to regain full architectural control. The goal was to create 
+              a platform where retrieval algorithms and chunking strategies could be swapped and measured 
+              systematically, ensuring that performance and result quality are driven by data, not framework defaults.
+            </p>
+          </section>
+
+          <section id="architecture" class="mb-5" data-aos="fade-up">
+            <h2 class="section-title" style="text-align: left; margin-left: 0;">Architecture Deep Dive</h2>
+            <p>
+              The platform is built on a modular backend that prioritizes the separation of concerns between 
+              data ingestion and query execution.
+            </p>
+            
+            <div class="architecture-diagram">
+              <img src="../images/ask-my-docs-architecture.png" id="arch-img" alt="Ask My Docs Architecture - Ingestion & Retrieval Pipeline" class="zoomable-img img-fluid rounded">
+              <p class="text-muted small mt-4">Click to zoom. This system map illustrates the modular ingestion pipeline and the hybrid retrieval engine powered by PostgreSQL.</p>
+            </div>
+
+            <h3 class="h4 mt-4">1. Async Ingestion Pipeline</h3>
+            <p>
+              Ingesting thousands of documents requires a robust background worker system. I used 
+              <strong>FastAPI</strong> paired with <strong>ARQ</strong> (Redis-backed task queue). Each stage—
+              parsing, chunking, embedding, and indexing—is an independent, idempotent task with its 
+              own retry logic and telemetry.
+            </p>
+
+            <h3 class="h4 mt-4">2. Hybrid Retrieval with PostgreSQL</h3>
+            <p>
+              Semantic search (vectors) is powerful but often fails on domain-specific keywords and acronyms. 
+              I implemented a <strong>Hybrid Retrieval</strong> system using vanilla PostgreSQL to balance 
+              semantic breadth with keyword precision, incorporating the <strong>BM25 search algorithm</strong> 
+              ranking logic for optimal relevance:
+            </p>
+            <ul>
+              <li><strong>pgvector (HNSW index):</strong> For high-dimensional semantic similarity.</li>
+              <li><strong>tsvector (GIN index):</strong> For traditional full-text keyword search with BM25-informed ranking.</li>
+            </ul>
+            <p>
+              Results are combined using a configurable weighting system, allowing the retrieval strategy to 
+              be tuned specifically to the document corpus.
+            </p>
+
+            <h3 class="h4 mt-4">3. Immutable Run Model</h3>
+            <p>
+              To make architectural experiments scientific, I implemented an <strong>Immutable Run Model</strong>. 
+              All ingestion parameters (chunk size, overlap, model version) are frozen for a "Run." Changing 
+              a strategy triggers a new Run, ensuring that every query's performance is traceable back to a 
+              specific, immutable set of engineering decisions.
+            </p>
+          </section>
+
+          <section id="decisions" class="mb-5" data-aos="fade-up">
+            <h2 class="section-title" style="text-align: left; margin-left: 0;">Strategic Decisions</h2>
+            
+            <div class="decision-log">
+              <strong>Decision: Vanilla PostgreSQL over specialized Vector DBs</strong>
+              <p class="mb-0 mt-2">
+                I chose PostgreSQL with <code>pgvector</code> instead of Pinecone or Milvus. For most 
+                mid-scale applications, the operational simplicity of a single database that handles 
+                metadata, full-text, and vectors outweighs the marginal performance gains of a specialized 
+                vector store. It also allows for complex relational filtering during retrieval.
+              </p>
+            </div>
+
+            <div class="decision-log">
+              <strong>Decision: Content-Addressed Chunks</strong>
+              <p class="mb-0 mt-2">
+                Chunks are identified by their content hash. This prevents duplicate embeddings when 
+                the same document is re-uploaded or when chunks overlap across different documents, 
+                significantly reducing embedding costs and storage.
+              </p>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+          <div class="featured-project-meta-box sticky-top" style="top: 100px;">
+            <p class="featured-project-meta-label">Technical Stack</p>
+            <div class="skill-chips mb-4">
+              <span class="chip">Python 3</span>
+              <span class="chip">FastAPI</span>
+              <span class="chip">Ollama (DeepSeek-R1)</span>
+              <span class="chip">PostgreSQL</span>
+              <span class="chip">pgvector</span>
+              <span class="chip">Redis</span>
+              <span class="chip">React</span>
+            </div>
+
+            <p class="featured-project-meta-label">Engineering Patterns</p>
+            <ul class="list-unstyled">
+              <li class="mb-2"><i class="fas fa-check text-accent me-2"></i> Hybrid Search</li>
+              <li class="mb-2"><i class="fas fa-check text-accent me-2"></i> Async Task Queues</li>
+              <li class="mb-2"><i class="fas fa-check text-accent me-2"></i> Immutable Experiments</li>
+              <li class="mb-2"><i class="fas fa-check text-accent me-2"></i> Content Addressing</li>
+            </ul>
+
+            <hr />
+            
+            <p class="text-muted small">
+              This platform serves as my personal lab for RAG research. While private, I am 
+              always open to sharing the technical implementation details and learnings 
+              regarding PGVector optimization and hybrid ranking—feel free to reach out.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="section-alt py-5">
+    <div class="container text-center">
+      <p class="footer-name">Abhineet Sharma</p>
+      <p class="text-muted">&copy; 2026 &middot; Designed by AI &middot; Built on AWS</p>
+      <a href="../index.html" class="btn btn-outline-secondary btn-sm mt-3">
+        <i class="fas fa-home me-2"></i> Back to Homepage
+      </a>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="../scripts/bootstrap.bundle.min.js"></script>
+  <script src="../scripts/aos.js"></script>
+  <script>
+    AOS.init({ duration: 800, once: true });
+    
+    // Theme sync (since this is a subpage)
+    (function() {
+      var stored = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var isDark = stored ? stored === 'dark' : prefersDark;
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    })();
+    // Zoom functionality
+    (function() {
+      const img = document.getElementById('arch-img');
+      const overlay = document.getElementById('overlay');
+      const overlayImg = document.getElementById('overlay-img');
+      
+      if (img && overlay && overlayImg) {
+        img.addEventListener('click', function() {
+          overlayImg.src = this.src;
+          overlay.classList.add('active');
+          document.body.style.overflow = 'hidden'; // Prevent scrolling
+        });
+        
+        overlay.addEventListener('click', function() {
+          overlay.classList.remove('active');
+          document.body.style.overflow = ''; // Restore scrolling
+        });
+      }
+    })();
+  </script>
+
+</body>
+</html>
