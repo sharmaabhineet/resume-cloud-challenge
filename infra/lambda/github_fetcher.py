@@ -139,6 +139,11 @@ def fetch_activity_stats(token):
           totalPullRequestContributions
           totalIssueContributions
           totalRepositoriesWithContributedCommits
+          totalPullRequestReviewContributions
+          restrictedContributionsCount
+          contributionCalendar {{
+            totalContributions
+          }}
           commitContributionsByRepository(maxRepositories: 10) {{
             repository {{
               nameWithOwner
@@ -163,7 +168,19 @@ def fetch_activity_stats(token):
         for entry in col.get("commitContributionsByRepository", [])
         if entry.get("repository")
     ]
+    # Contributions in private repos the token can't itemise come back only as
+    # restrictedContributionsCount, so the public counts alone can read as 0.
+    private_contributions = col.get("restrictedContributionsCount", 0)
+    public_contributions = (
+        col.get("totalCommitContributions", 0)
+        + col.get("totalPullRequestContributions", 0)
+        + col.get("totalIssueContributions", 0)
+        + col.get("totalPullRequestReviewContributions", 0)
+    )
+    calendar_total = col.get("contributionCalendar", {}).get("totalContributions", 0)
     return {
+        "contributions_30d":         max(calendar_total, public_contributions + private_contributions),
+        "private_contributions_30d": private_contributions,
         "commits_30d":       col.get("totalCommitContributions", 0),
         "prs_30d":           col.get("totalPullRequestContributions", 0),
         "issues_30d":        col.get("totalIssueContributions", 0),
@@ -211,7 +228,9 @@ def bedrock_summary(repos, activity, commit_messages):
         f"Last 30 days — total activity (public + private repos): {activity['commits_30d']} commits, "
         f"{activity['prs_30d']} pull requests, {activity['issues_30d']} issues "
         f"across {activity['repos_active']} repos "
-        f"({private_repos} of which are private — no details available).\n\n"
+        f"({private_repos} of which are private — no details available), plus "
+        f"{activity.get('private_contributions_30d', 0)} contributions to private repos "
+        f"({activity.get('contributions_30d', 0)} contributions in total).\n\n"
         f"Recent commit messages from public repos only:\n{commits_excerpt}\n\n"
         f"Write 2-3 sentences (max 60 words) summarising the kinds of projects and technical areas "
         f"worked on, based on the public commit messages. Acknowledge that additional private work "

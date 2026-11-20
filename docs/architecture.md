@@ -347,6 +347,8 @@ EventBridge (weekly) → Lambda → GitHub GraphQL API (pinned repos) → fallba
     }
   ],
   "activity": {
+    "contributions_30d":         420,
+    "private_contributions_30d": 408,
     "commits_30d":     12,
     "repos_active":    1,
     "active_repo_list": ["sharmaabhineet/resume-cloud-challenge"]

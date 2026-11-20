@@ -1153,10 +1153,17 @@
         // AI summary
         if (data.ai_summary) {
           document.getElementById('github-summary-text').textContent = data.ai_summary;
-          var stats = data.activity
-            ? data.activity.commits_30d + ' commits &middot; ' +
-              data.activity.repos_active + ' repos active (last 30 days)'
-            : '';
+          var a = data.activity;
+          var stats = '';
+          if (a && a.contributions_30d != null) {
+            stats = a.contributions_30d + ' contributions in the last 30 days';
+            if (a.private_contributions_30d > a.contributions_30d / 2) {
+              stats += ', mostly in private repos';
+            }
+          } else if (a) {
+            stats = a.commits_30d + ' commits &middot; ' +
+              a.repos_active + ' repos active (last 30 days)';
+          }
           document.getElementById('github-activity-stats').innerHTML = generatedAt
             ? stats + ' &middot; Generated ' + generatedAt
             : stats;
