@@ -237,7 +237,9 @@ def get_github_section():
             lines.append(f"AI summary: {ai_summary}")
         if activity:
             lines.append(
-                f"Last 30 days: {activity.get('commits_30d', 0)} commits, "
+                f"Last 30 days: {activity.get('contributions_30d', 0)} contributions "
+                f"({activity.get('private_contributions_30d', 0)} in private repos), "
+                f"{activity.get('commits_30d', 0)} public commits, "
                 f"{activity.get('prs_30d', 0)} PRs, "
                 f"{activity.get('repos_active', 0)} repos active "
                 f"(includes private repos)"

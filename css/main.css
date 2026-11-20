@@ -1546,3 +1546,12 @@ textarea.contact-input { resize: vertical; min-height: 120px; }
   background: var(--bg);
   border-color: var(--border);
 }
+
+/* Phones: this Bootstrap build's gutters (g-3 = 2rem, g-5 = 3rem) are wider than
+   the full-width container's 12px padding, so rows stuck out and the page
+   scrolled sideways. Cap the horizontal gutter at twice the container padding. */
+@media (max-width: 575.98px) {
+  .row {
+    --bs-gutter-x: 1.5rem;
+  }
+}
