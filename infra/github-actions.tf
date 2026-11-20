@@ -19,10 +19,10 @@ resource "aws_iam_role" "github_actions" {
       Action    = "sts:AssumeRoleWithWebIdentity"
       Principal = { Federated = aws_iam_openid_connect_provider.github_actions.arn }
       Condition = {
-        StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:sharmaabhineet/resume-cloud-challenge:*"
-        }
+        # only a run on master (the deploy, or a manual run of it) may assume this role; other branches,
+        # tags, pull requests and environments can't
         StringEquals = {
+          "token.actions.githubusercontent.com:sub" = "repo:sharmaabhineet/resume-cloud-challenge:ref:refs/heads/master"
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
         }
       }
